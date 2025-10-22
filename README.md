@@ -7,7 +7,7 @@ L’objectif est de rendre la navigation plus sûre en combinant **analyse autom
 
 ---
 
-## 🚀 Fonctionnalités principales
+## Fonctionnalités principales
 
 - Analyse automatique d’un site :
   - Âge du domaine
@@ -22,7 +22,7 @@ L’objectif est de rendre la navigation plus sûre en combinant **analyse autom
 
 ---
 
-## 🎯 Objectifs du projet
+## Objectifs du projet
 
 - Développer une **extension fonctionnelle en version bêta** testée par des utilisateurs externes.  
 - Fournir une expérience fluide, stable et compréhensible par tous.  
@@ -31,7 +31,7 @@ L’objectif est de rendre la navigation plus sûre en combinant **analyse autom
 
 ---
 
-## 🧠 Compétences mobilisées
+## Compétences mobilisées
 
 - Développement web (HTML, CSS, JavaScript)  
 - Création d’extensions navigateur  
