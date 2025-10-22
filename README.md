@@ -5,8 +5,8 @@
 　　　╰(°▽°)╯　　(✿◠‿◠)　　(ノ^_^)ノ  
 　　　┻━┻ ︵ (╯°□°）╯︵ ┻━┻  
 🌸🌼🌺🌻🌷🌹🌸🌼🌺🌻🌷🌹🌸🌼🌺🌻🌷🌹  
-
-✨ *Webitrust – parce que même les fleurs méritent un Internet sûr* ✨
+  
+✨ *Webitrust – parce que même les fleurs méritent un Internet sûr !* ✨
 
 ## 🧩 Description
 **Webitrust** est une extension navigateur qui évalue la **fiabilité et la réputation des sites web** visités.  
