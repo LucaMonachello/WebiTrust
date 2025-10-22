@@ -42,4 +42,3 @@ L’objectif est de rendre la navigation plus sûre en combinant **analyse autom
 - Gestion de projet et documentation
 
 ---
-
