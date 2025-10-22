@@ -1,14 +1,5 @@
-# 🌐 Webitrust
-🌸🌼🌺🌻🌷🌹🌸🌼🌺🌻🌷🌹🌸🌼🌺🌻🌷🌹  
-　　　　　　　　　(づ￣ ³￣)づ  
-　　　　　(◕‿◕✿)　　(≧◡≦)　　(•_•) <3 (•_•)  
-　　　╰(°▽°)╯　　(✿◠‿◠)　　(ノ^_^)ノ  
-　　　┻━┻ ︵ (╯°□°）╯︵ ┻━┻  
-🌸🌼🌺🌻🌷🌹🌸🌼🌺🌻🌷🌹🌸🌼🌺🌻🌷🌹  
-  
-✨ *Webitrust – parce que même les fleurs méritent un Internet sûr !* ✨
-
-## 🧩 Description
+# Webitrust
+## Description
 **Webitrust** est une extension navigateur qui évalue la **fiabilité et la réputation des sites web** visités.  
 Elle s’adresse à tous les utilisateurs, même non techniques, pour les aider à identifier les sites potentiellement malveillants.
 
