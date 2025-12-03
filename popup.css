@@ -1,0 +1,330 @@
+:root {
+  --wt-bg: #050816;
+  --wt-bg-elevated: #0b1021;
+  --wt-border-subtle: rgba(255, 255, 255, 0.06);
+  --wt-accent: #4f46e5;
+  --wt-accent-soft: rgba(79, 70, 229, 0.15);
+  --wt-danger: #ef4444;
+  --wt-warning: #f59e0b;
+  --wt-safe: #22c55e;
+  --wt-text: #f9fafb;
+  --wt-text-muted: #9ca3af;
+  --wt-radius-lg: 14px;
+  --wt-radius-full: 999px;
+  --wt-shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.78);
+  --wt-font-main: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    "Segoe UI", sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  width: 340px;
+  min-height: 280px;
+  background: radial-gradient(circle at top left, #1e293b 0, #020617 40%, #000 100%);
+  color: var(--wt-text);
+  font-family: var(--wt-font-main);
+}
+
+/* Container principal */
+
+.wt-container {
+  padding: 14px 14px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Header */
+
+.wt-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px 8px;
+  border-radius: var(--wt-radius-lg);
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 64, 175, 0.6));
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  box-shadow: var(--wt-shadow-soft);
+}
+
+.wt-logo-circle {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--wt-radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  background: radial-gradient(circle at 30% 0, #a855f7, #2563eb 40%, #0f172a 100%);
+  color: #e5e7eb;
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.7);
+}
+
+.wt-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.wt-subtitle {
+  margin: 0;
+  font-size: 11px;
+  color: var(--wt-text-muted);
+}
+
+/* Corps */
+
+.wt-main {
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  border-radius: var(--wt-radius-lg);
+  background: linear-gradient(150deg, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.9));
+  border: 1px solid var(--wt-border-subtle);
+}
+
+/* URL */
+
+.wt-url {
+  font-size: 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.wt-url-label {
+  color: var(--wt-text-muted);
+}
+
+.wt-url-value {
+  font-size: 12px;
+  color: #e5e7eb;
+  word-break: break-all;
+}
+
+/* Carte score */
+
+.wt-score-card {
+  margin-top: 4px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.wt-score-ring {
+  position: relative;
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle at 30% 0, rgba(248, 250, 252, 0.12), transparent 60%),
+    conic-gradient(
+      from 220deg,
+      rgba(248, 113, 113, 0.7),
+      rgba(234, 179, 8, 0.85),
+      rgba(52, 211, 153, 0.9),
+      rgba(59, 130, 246, 0.9)
+    );
+  padding: 3px;
+}
+
+.wt-score-ring::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border-radius: inherit;
+  background: radial-gradient(circle at top, #020617 0, #020617 40%, #020617 100%);
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.2);
+}
+
+.wt-score-ring span {
+  position: relative;
+}
+
+#wt-score-value {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.wt-score-unit {
+  font-size: 11px;
+  color: var(--wt-text-muted);
+  margin-left: 2px;
+}
+
+.wt-score-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.wt-score-label {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.wt-score-desc {
+  margin: 0;
+  font-size: 11px;
+  color: var(--wt-text-muted);
+}
+
+/* Tags */
+
+.wt-tags {
+  margin-top: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.wt-tag {
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: var(--wt-radius-full);
+  border: 1px solid transparent;
+  background: rgba(15, 23, 42, 0.9);
+}
+
+.wt-tag-safe {
+  border-color: rgba(34, 197, 94, 0.5);
+  color: #bbf7d0;
+  background: radial-gradient(circle at 0 0, rgba(22, 163, 74, 0.45), transparent 60%);
+}
+
+.wt-tag-warning {
+  border-color: rgba(234, 179, 8, 0.6);
+  color: #fef3c7;
+  background: radial-gradient(circle at 0 0, rgba(250, 204, 21, 0.4), transparent 60%);
+}
+
+.wt-tag-risk {
+  border-color: rgba(248, 113, 113, 0.7);
+  color: #fee2e2;
+  background: radial-gradient(circle at 0 0, rgba(239, 68, 68, 0.5), transparent 60%);
+}
+
+/* Footer / boutons */
+
+.wt-footer {
+  margin-top: 2px;
+  display: flex;
+  gap: 8px;
+}
+
+.wt-btn-primary,
+.wt-btn-ghost {
+  flex: 1;
+  border-radius: 999px;
+  font-size: 12px;
+  padding: 8px 10px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.16s ease-out;
+  font-weight: 500;
+}
+
+.wt-btn-primary {
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
+  color: #f9fafb;
+  box-shadow: 0 10px 30px rgba(79, 70, 229, 0.7);
+}
+
+.wt-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 32px rgba(79, 70, 229, 0.9);
+}
+
+.wt-btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 18px rgba(79, 70, 229, 0.7);
+}
+
+.wt-btn-ghost {
+  background: rgba(15, 23, 42, 0.85);
+  color: var(--wt-text-muted);
+  border-color: rgba(148, 163, 184, 0.4);
+}
+
+.wt-btn-ghost:hover {
+  border-color: rgba(148, 163, 184, 0.7);
+  color: #e5e7eb;
+}
+
+/* Loader */
+
+.wt-loading {
+  margin-top: 6px;
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--wt-text-muted);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px dashed rgba(148, 163, 184, 0.5);
+}
+
+.wt-loader {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  border: 2px solid rgba(148, 163, 184, 0.5);
+  border-top-color: #6366f1;
+  animation: wt-spin 0.8s linear infinite;
+}
+
+.hidden {
+  display: none;
+}
+
+/* Disclaimer */
+
+.wt-disclaimer {
+  margin: 2px 2px 0;
+  font-size: 9px;
+  color: var(--wt-text-muted);
+  text-align: center;
+}
+
+/* État couleur en fonction du score (à ajouter/retirer en JS sur .wt-score-ring ou .wt-score-label) */
+
+.wt-score-good {
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.4);
+}
+
+.wt-score-medium {
+  box-shadow: 0 0 0 1px rgba(234, 179, 8, 0.45);
+}
+
+.wt-score-bad {
+  box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.6);
+}
+
+/* Animations */
+
+@keyframes wt-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

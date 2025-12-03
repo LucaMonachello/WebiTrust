@@ -1,7 +1,66 @@
-<style>
- h1,p{
-     text-align:center
-    }
-</style>
-<h1>WebiTrust</h1>
-<p>L'extension qui vous donne confiance</p>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>WebiTrust</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="wt-container">
+    <header class="wt-header">
+      <div class="wt-logo-circle">W</div>
+      <div>
+        <h1 class="wt-title">WebiTrust</h1>
+        <p class="wt-subtitle">Analyse de fiabilité du site actuel</p>
+      </div>
+    </header>
+
+    <section class="wt-main">
+      <div class="wt-url">
+        <span class="wt-url-label">Site analysé :</span>
+        <span id="wt-current-url" class="wt-url-value">Chargement...</span>
+      </div>
+
+      <div class="wt-score-card">
+        <div class="wt-score-ring">
+          <span id="wt-score-value">--</span>
+          <span class="wt-score-unit">/100</span>
+        </div>
+        <div class="wt-score-info">
+          <p id="wt-score-label" class="wt-score-label">En attente d'analyse</p>
+          <p id="wt-score-desc" class="wt-score-desc">
+            Cliquez sur « Analyser ce site » pour obtenir un score de fiabilité.
+          </p>
+        </div>
+      </div>
+
+      <div class="wt-tags" id="wt-tags">
+        <!-- Exemples de tags (remplace en JS en fonction de l’API) -->
+        <!-- <span class="wt-tag wt-tag-safe">Site fiable</span>
+        <span class="wt-tag wt-tag-warning">Peu d’avis</span> -->
+      </div>
+    </section>
+
+    <footer class="wt-footer">
+      <button id="wt-analyze-btn" class="wt-btn-primary">
+        Analyser ce site
+      </button>
+      <button id="wt-refresh-btn" class="wt-btn-ghost">
+        Rafraîchir
+      </button>
+    </footer>
+
+    <div id="wt-loading" class="wt-loading hidden">
+      <span class="wt-loader"></span>
+      <span>Analyse en cours...</span>
+    </div>
+
+    <p class="wt-disclaimer">
+      Les scores sont fournis à titre indicatif sur la base de l’API WeibTrust.
+    </p>
+  </div>
+
+  <!-- Tu chargeras ici ton fichier popup.js pour appeler l’API -->
+  <script src="popup.js"></script>
+</body>
+</html>
