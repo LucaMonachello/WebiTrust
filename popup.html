@@ -1,66 +1,59 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>WebiTrust</title>
-  <link rel="stylesheet" href="popup.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebiTrust - Popup</title>
+    <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <div class="wt-container">
-    <header class="wt-header">
-      <div class="wt-logo-circle">W</div>
-      <div>
-        <h1 class="wt-title">WebiTrust</h1>
-        <p class="wt-subtitle">Analyse de fiabilité du site actuel</p>
-      </div>
-    </header>
-
-    <section class="wt-main">
-      <div class="wt-url">
-        <span class="wt-url-label">Site analysé :</span>
-        <span id="wt-current-url" class="wt-url-value">Chargement...</span>
-      </div>
-
-      <div class="wt-score-card">
-        <div class="wt-score-ring">
-          <span id="wt-score-value">--</span>
-          <span class="wt-score-unit">/100</span>
+    <div class="wt-container">
+        <div class="wt-header">
+            <div class="wt-logo-circle">W</div>
+            <div>
+                <h1 class="wt-title">WebiTrust</h1>
+                <p class="wt-subtitle">Analyse de sécurité</p>
+            </div>
         </div>
-        <div class="wt-score-info">
-          <p id="wt-score-label" class="wt-score-label">En attente d'analyse</p>
-          <p id="wt-score-desc" class="wt-score-desc">
-            Cliquez sur « Analyser ce site » pour obtenir un score de fiabilité.
-          </p>
+
+        <div class="wt-main">
+            <div class="wt-url">
+                <span class="wt-url-label">URL actuellement analysée</span>
+                <span class="wt-url-value" id="wt-url-display">Chargement...</span>
+            </div>
+
+            <div class="wt-score-card">
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                    <div class="wt-stars-container" id="wt-stars-container">
+                        <span class="wt-star">★</span>
+                        <span class="wt-star">★</span>
+                        <span class="wt-star">★</span>
+                        <span class="wt-star">★</span>
+                        <span class="wt-star">★</span>
+                    </div>
+                    <div class="wt-score-value-text" id="wt-score-value">-/5</div>
+                </div>
+                <div class="wt-score-info">
+                    <p class="wt-score-label" id="wt-score-label">Analyse en cours</p>
+                    <p class="wt-score-desc" id="wt-score-desc">Patientez quelques secondes...</p>
+                </div>
+            </div>
+
+            <div class="wt-tags" id="wt-tags-container">
+                <span class="wt-tag wt-tag-warning">Analyse en cours</span>
+            </div>
         </div>
-      </div>
 
-      <div class="wt-tags" id="wt-tags">
-        <!-- Exemples de tags (remplace en JS en fonction de l’API) -->
-        <!-- <span class="wt-tag wt-tag-safe">Site fiable</span>
-        <span class="wt-tag wt-tag-warning">Peu d’avis</span> -->
-      </div>
-    </section>
+        <div class="wt-footer">
+            <button class="wt-btn-primary" id="wt-btn-check">Vérifier ce site</button>
+            <button class="wt-btn-ghost" id="wt-btn-report">Signaler</button>
+        </div>
 
-    <footer class="wt-footer">
-      <button id="wt-analyze-btn" class="wt-btn-primary">
-        Analyser ce site
-      </button>
-      <button id="wt-refresh-btn" class="wt-btn-ghost">
-        Rafraîchir
-      </button>
-    </footer>
-
-    <div id="wt-loading" class="wt-loading hidden">
-      <span class="wt-loader"></span>
-      <span>Analyse en cours...</span>
+        <div class="wt-disclaimer">
+            WebiTrust © 2025 - Analyse de fiabilité des sites web
+        </div>
     </div>
 
-    <p class="wt-disclaimer">
-      Les scores sont fournis à titre indicatif sur la base de l’API WeibTrust.
-    </p>
-  </div>
-
-  <!-- Tu chargeras ici ton fichier popup.js pour appeler l’API -->
-  <script src="popup.js"></script>
+    <script src="popup.js"></script>
 </body>
 </html>
