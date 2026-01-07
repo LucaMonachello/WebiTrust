@@ -4,7 +4,8 @@
  */
 
 import { analyzeSite } from './blocklist.js';
-import { analyzeSecurityFeatures } from './securityAnalyzer.js';
+// import { analyzeSecurityFeatures } from './securityAnalyzer.js';
+import { analyzeSecurityFeatures, checkAccessibility } from './securityAnalyzer.js';
 import { calculateScore } from './scoreCalculator.js';
 import { 
     displayURL, 
@@ -22,6 +23,60 @@ let currentURL = null;
  * @param {string} url - URL complète du site
  * @param {string} hostname - Nom d'hôte du site
  */
+
+async function performAnalysis(url, hostname) {
+    showLoadingState();
+
+    try {
+        // 0️⃣ Vérification d’accessibilité (DNS / HTTP)
+        const accessibilityCheck = await checkAccessibility(url);
+
+        // ❌ Site inaccessible → STOP analyse
+        if (!accessibilityCheck.isAccessible) {
+            displayScore(
+                0,
+                [],
+                [{
+                    text: accessibilityCheck.message,
+                    severity: accessibilityCheck.severity
+                }]
+            );
+
+            console.warn('Analyse stoppée : site inaccessible', accessibilityCheck);
+            return; // ⛔ arrêt total
+        }
+
+        // 1️⃣ Blocklists
+        const blocklistMatches = await analyzeSite(hostname);
+
+        // 2️⃣ Sécurité technique
+        const securityResults = await analyzeSecurityFeatures(url, hostname);
+
+        // 3️⃣ Score final
+        const finalScore = calculateScore(
+            blocklistMatches,
+            securityResults.totalPenalty
+        );
+
+        // 4️⃣ Affichage
+        displayScore(finalScore, blocklistMatches, securityResults.messages);
+
+        console.log('Analyse terminée:', {
+            score: finalScore,
+            blocklistMatches: blocklistMatches.length,
+            securityPenalty: securityResults.totalPenalty
+        });
+
+    } catch (error) {
+        console.error('Erreur analyse:', error);
+        showErrorState('Impossible d\'analyser cette page');
+    }
+}
+
+
+
+
+/**
 async function performAnalysis(url, hostname) {
     // Afficher l'état de chargement
     showLoadingState();
@@ -56,6 +111,8 @@ async function performAnalysis(url, hostname) {
         showErrorState('Impossible d\'analyser cette page');
     }
 }
+*/
+
 
 /**
  * Récupère et analyse l'URL de l'onglet actif
