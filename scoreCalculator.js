@@ -1,118 +1,96 @@
 /**
- * Module de calcul du score de fiabilité
- * Gère le calcul du score et les informations associées
+ * Module de calcul du score de fiabilité - Version 100 points
+ * Gère la logique mathématique et la catégorisation du niveau de risque
  */
 
 /**
- * Calcule le score en fonction des matches et de la sécurité
+ * Calcule le score final sur 100
  * @param {string[]} matches - Liste des correspondances dans les blocklists
- * @param {number} securityPenalty - Pénalité due aux problèmes de sécurité
- * @returns {number} Score de 0 à 5
+ * @param {number} securityPenalty - Pénalité accumulée (basée sur securityAnalyzer)
+ * @returns {number} Score entier entre 0 et 100
  */
 export function calculateScore(matches, securityPenalty = 0) {
-    let baseScore = 5.0;
-    
-    // Pénalité pour les blocklists
+    let score = 100;
+
+    // 1. Pénalités pour les listes noires (Blocklists)
+    // On considère qu'une détection est critique
     if (matches.length === 1) {
-        baseScore -= 2.0; // Une détection = -2 points
+        score -= 50; // Chute directe à 50 (Orange)
     } else if (matches.length === 2) {
-        baseScore -= 3.5; // Deux détections = -3.5 points
+        score -= 80; // Chute à 20 (Rouge)
     } else if (matches.length >= 3) {
-        baseScore -= 4.5; // Trois détections ou plus = -4.5 points
+        score -= 100; // Danger immédiat (0)
     }
-    
-    // Appliquer la pénalité de sécurité
-    baseScore += securityPenalty; // securityPenalty est déjà négatif
-    
-    // S'assurer que le score reste entre 0 et 5
-    return Math.max(0, Math.min(5, baseScore));
+
+    // 2. Pénalités techniques (HTTPS, SSL, etc.)
+    // Les pénalités venant de securityAnalyzer (ex: -2) sont multipliées par 15
+    // pour avoir un impact réel sur une échelle de 100.
+    const technicalImpact = Math.abs(securityPenalty) * 15;
+    score -= technicalImpact;
+
+    // 3. Sécurité : On s'assure que le score reste entre 0 et 100
+    return Math.max(0, Math.min(100, Math.round(score)));
 }
 
 /**
- * Obtient les informations détaillées sur le score
- * @param {number} score - Score calculé
- * @param {string[]} matches - Liste des correspondances blocklist
- * @param {Array} securityMessages - Messages de sécurité (UNIQUEMENT les problèmes)
- * @returns {Object} Objet contenant label, description, classe CSS et tags
+ * Fournit les textes et styles associés au score
+ * @param {number} score - Score sur 100
+ * @param {string[]} matches - Liste des menaces
+ * @param {Array} securityMessages - Alertes techniques
+ * @returns {Object} Label, description, classe CSS et tags
  */
 export function getScoreInfo(score, matches, securityMessages = []) {
-    const numScore = parseFloat(score);
     let tags = [];
-    
-    // Ajouter les messages de sécurité problématiques en premier
-    if (securityMessages && securityMessages.length > 0) {
+
+    // On récupère les messages d'erreur techniques
+    if (securityMessages) {
         securityMessages.forEach(msg => {
-            if (msg.text) {
-                tags.push(msg.text);
-            }
+            if (msg.text) tags.push(msg.text);
         });
     }
-    
-    // Ajouter les tags de blocklist
+
+    // On ajoute les noms des blocklists détectées
     if (matches.length > 0) {
         tags = [...tags, ...matches];
     }
-    
-    // Si aucun problème détecté, ajouter des tags positifs
-    if (tags.length === 0) {
-        if (numScore >= 4.5) {
-            tags = ["✓ HTTPS sécurisé", "✓ Aucune menace détectée", "✓ Domaine fiable"];
-        } else if (numScore >= 3.5) {
-            tags = ["✓ Aucune menace détectée"];
-        }
+
+    // Si le score est parfait et aucun tag n'existe, on valorise le site
+    if (tags.length === 0 && score >= 90) {
+        tags = ["✓ Site sécurisé", "✓ Connexion chiffrée", "✓ Aucun risque détecté"];
     }
-    
-    // Déterminer le niveau de fiabilité
-    if (numScore >= 4.5) {
+
+    // Catégorisation pour l'interface
+    if (score >= 80) {
         return {
             label: "Très fiable",
-            desc: "Site sécurisé et digne de confiance",
-            className: "wt-score-good",
+            desc: "Ce site présente des garanties de sécurité solides.",
+            className: "wt-tag-safe", // Utilise tes classes CSS existantes
             tags: tags
         };
-    } else if (numScore >= 3.5) {
+    } else if (score >= 50) {
         return {
-            label: "Fiable",
-            desc: "Site généralement sûr",
-            className: "wt-score-good",
-            tags: tags
-        };
-    } else if (numScore >= 2.5) {
-        return {
-            label: "Attention requise",
-            desc: "Éléments suspects détectés",
-            className: "wt-score-medium",
-            tags: tags
-        };
-    } else if (numScore >= 1.5) {
-        return {
-            label: "Potentiellement risqué",
-            desc: "Plusieurs risques détectés",
-            className: "wt-score-bad",
+            label: "Prudence",
+            desc: "Quelques points de vigilance détectés sur ce domaine.",
+            className: "wt-tag-warning",
             tags: tags
         };
     } else {
         return {
-            label: "Très risqué",
-            desc: "Site potentiellement malveillant",
-            className: "wt-score-bad",
+            label: "Site Risqué",
+            desc: "Attention, ce site présente des risques élevés de phishing ou de fraude.",
+            className: "wt-tag-risk",
             tags: tags
         };
     }
 }
 
 /**
- * Détermine la classe de couleur pour les étoiles
- * @param {number} score - Score calculé
- * @returns {string} Classe CSS pour la couleur
+ * Détermine la couleur hexadécimale pour l'anneau de progression
+ * @param {number} score - Score sur 100
+ * @returns {string} Code couleur Hex
  */
-export function getStarColorClass(score) {
-    const numScore = parseFloat(score);
-    
-    if (numScore < 2.5) {
-        return 'filled-bad';
-    } else if (numScore < 4) {
-        return 'filled-medium';
-    }
-    return 'filled-good';
+export function getScoreColor(score) {
+    if (score >= 80) return '#22c55e'; // Vert (--wt-safe)
+    if (score >= 50) return '#f59e0b'; // Orange (--wt-warning)
+    return '#ef4444'; // Rouge (--wt-danger)
 }

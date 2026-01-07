@@ -1,116 +1,63 @@
-/**
- * Module de gestion de l'interface utilisateur
- * Gère l'affichage et les mises à jour du popup
- */
-
-import { getStarColorClass, getScoreInfo } from './scoreCalculator.js';
+import { getScoreInfo } from './scoreCalculator.js';
 
 /**
- * Affiche les étoiles en fonction du score
- * @param {number} score - Score à afficher
+ * Anime l'anneau de score
  */
-export function displayStars(score) {
-    const numScore = parseFloat(score);
-    const stars = document.querySelectorAll('.wt-star');
-    const filledStars = Math.round(numScore);
+export function updateScoreRing(score) {
+    const ring = document.querySelector('.wt-score-ring');
+    const valueEl = document.getElementById('wt-score-value');
     
-    // Déterminer la couleur en fonction du score
-    const colorClass = getStarColorClass(score);
-    
-    stars.forEach((star, index) => {
-        // Enlever toutes les classes de couleur
-        star.classList.remove('filled-good', 'filled-medium', 'filled-bad');
-        
-        if (index < filledStars) {
-            star.classList.add(colorClass);
-        }
-    });
+    if (!ring || !valueEl) return;
+
+    // Mise à jour du texte
+    valueEl.textContent = score;
+
+    // Détermination de la couleur principale en fonction du score
+    let color = "#ef4444"; // Rouge
+    if (score >= 50) color = "#f59e0b"; // Orange
+    if (score >= 80) color = "#22c55e"; // Vert
+
+    // On met à jour le dégradé conique pour remplir l'anneau
+    // from 220deg pour correspondre à ton style CSS
+    ring.style.background = `conic-gradient(from 220deg, ${color} ${score}%, #1e293b ${score}%)`;
 }
 
-/**
- * Affiche les tags de sécurité
- * @param {string[]} tags - Liste des tags à afficher
- */
 export function displayTags(tags) {
     const container = document.getElementById('wt-tags-container');
     container.innerHTML = '';
-    
     tags.forEach(tag => {
         const tagEl = document.createElement('span');
         tagEl.className = 'wt-tag';
-        
-        // Déterminer la classe CSS en fonction du contenu du tag
-        if (tag.includes('✓')) {
-            tagEl.classList.add('wt-tag-safe');
-        } else if (tag.includes('✗')) {
-            tagEl.classList.add('wt-tag-risk');
-        } else if (tag.includes('⚠')) {
-            tagEl.classList.add('wt-tag-warning');
-        } else {
-            // Par défaut, utiliser warning pour les autres cas
-            tagEl.classList.add('wt-tag-warning');
-        }
-        
+        if (tag.includes('✓')) tagEl.classList.add('wt-tag-safe');
+        else if (tag.includes('✗')) tagEl.classList.add('wt-tag-risk');
+        else tagEl.classList.add('wt-tag-warning');
         tagEl.textContent = tag;
         container.appendChild(tagEl);
     });
 }
 
-/**
- * Affiche le score complet avec toutes les informations
- * @param {number} score - Score calculé
- * @param {string[]} matches - Liste des correspondances blocklist
- * @param {Array} securityMessages - Messages de sécurité
- */
 export function displayScore(score, matches, securityMessages = []) {
-    // Filtrer uniquement les messages problématiques (qui ne contiennent pas ✓)
-    const problematicMessages = securityMessages.filter(msg => 
-        msg.text && !msg.text.includes('✓')
-    );
-    
-    // Récupérer les informations de score avec uniquement les messages problématiques
+    const problematicMessages = securityMessages.filter(msg => msg.text && !msg.text.includes('✓'));
     const scoreInfo = getScoreInfo(score, matches, problematicMessages);
     
-    // Afficher les étoiles
-    displayStars(score);
+    updateScoreRing(score);
     
-    // Afficher la valeur numérique
-    const scoreValueEl = document.getElementById('wt-score-value');
-    scoreValueEl.textContent = score.toFixed(1) + '/5';
-    scoreValueEl.className = 'wt-score-value-text ' + scoreInfo.className;
-    
-    // Afficher le label et la description
     document.getElementById('wt-score-label').textContent = scoreInfo.label;
     document.getElementById('wt-score-desc').textContent = scoreInfo.desc;
-    
-    // Afficher les tags (incluant maintenant les messages de sécurité)
     displayTags(scoreInfo.tags);
 }
 
-/**
- * Affiche l'URL du site analysé
- * @param {string} hostname - Nom d'hôte à afficher
- */
 export function displayURL(hostname) {
-    document.getElementById('wt-url-display').textContent = hostname;
+    document.getElementById('wt-current-url').textContent = hostname;
 }
 
-/**
- * Affiche l'état de chargement
- */
 export function showLoadingState() {
-    document.getElementById('wt-score-label').textContent = 'Analyse en cours';
-    document.getElementById('wt-score-desc').textContent = 'Vérification des listes...';
-    displayTags(['⏳ Analyse en cours']);
+    document.getElementById('wt-score-label').textContent = 'Analyse...';
+    document.getElementById('wt-loading').classList.remove('hidden');
 }
 
-/**
- * Affiche un état d'erreur
- * @param {string} message - Message d'erreur à afficher
- */
-export function showErrorState(message = 'Erreur lors de l\'analyse') {
-    document.getElementById('wt-url-display').textContent = 'URL invalide';
+export function showErrorState(message) {
     document.getElementById('wt-score-label').textContent = 'Erreur';
     document.getElementById('wt-score-desc').textContent = message;
-    displayTags(['❌ Erreur']);
+    document.getElementById('wt-loading').classList.add('hidden');
 }
