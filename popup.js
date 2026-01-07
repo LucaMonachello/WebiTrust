@@ -4,7 +4,6 @@
  */
 
 import { analyzeSite } from './blocklist.js';
-// import { analyzeSecurityFeatures } from './securityAnalyzer.js';
 import { analyzeSecurityFeatures, checkAccessibility } from './securityAnalyzer.js';
 import { calculateScore } from './scoreCalculator.js';
 import { 
@@ -72,47 +71,6 @@ async function performAnalysis(url, hostname) {
         showErrorState('Impossible d\'analyser cette page');
     }
 }
-
-
-
-
-/**
-async function performAnalysis(url, hostname) {
-    // Afficher l'état de chargement
-    showLoadingState();
-    
-    try {
-        // 1. Analyser le site avec les blocklists
-        const blocklistMatches = await analyzeSite(hostname);
-        
-        // 2. Analyser les caractéristiques de sécurité
-        const securityResults = await analyzeSecurityFeatures(url, hostname);
-        
-        // 3. Calculer le score final
-        const finalScore = calculateScore(
-            blocklistMatches, 
-            securityResults.totalPenalty
-        );
-        
-        // 4. Afficher les résultats avec les messages de sécurité
-        displayScore(finalScore, blocklistMatches, securityResults.messages);
-        
-        // Log pour debug
-        console.log('Analyse terminée:', {
-            score: finalScore,
-            blocklistMatches: blocklistMatches.length,
-            securityPenalty: securityResults.totalPenalty,
-            securityChecks: securityResults.checks,
-            securityMessages: securityResults.messages
-        });
-        
-    } catch (error) {
-        console.error('Erreur lors de l\'analyse:', error);
-        showErrorState('Impossible d\'analyser cette page');
-    }
-}
-*/
-
 
 /**
  * Récupère et analyse l'URL de l'onglet actif
