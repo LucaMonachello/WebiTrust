@@ -42,7 +42,7 @@ export async function checkDomainAge(hostname) {
     // Pour l'instant, on peut détecter certains patterns suspects
     
     // Vérifier les préfixes suspects (ww2, ww3, etc.)
-    const suspiciousPrefixes = /^ww\d+\./i;
+    const suspiciousPrefixes = /^(ww\d+|w{3,}\d*)\./i;
     if (suspiciousPrefixes.test(hostname)) {
         return {
             isSuspicious: true,
@@ -116,14 +116,52 @@ export async function checkSSLCertificate(url) {
             };
         }
         
-        // Pour HTTPS, on considère le certificat comme valide si le site charge
-        // Le navigateur aurait déjà bloqué l'accès si le certificat était vraiment invalide
-        return {
-            isValid: true,
-            penaltyScore: 0,
-            message: '✓ Certificat SSL présent',
-            severity: 'safe'
-        };
+        // Tester la connexion SSL avec une image de 1px
+        try {
+            await new Promise((resolve, reject) => {
+                const img = new Image();
+                const timeout = setTimeout(() => {
+                    reject(new Error('timeout'));
+                }, 5000);
+                
+                img.onload = () => {
+                    clearTimeout(timeout);
+                    resolve();
+                };
+                
+                img.onerror = (e) => {
+                    clearTimeout(timeout);
+                    reject(new Error('ssl_error'));
+                };
+                
+                // Ajouter un timestamp pour éviter le cache
+                img.src = `${urlObj.origin}/favicon.ico?_t=${Date.now()}`;
+            });
+            
+            return {
+                isValid: true,
+                penaltyScore: 0,
+                message: '✓ Certificat SSL valide',
+                severity: 'safe'
+            };
+        } catch (error) {
+            if (error.message === 'ssl_error') {
+                return {
+                    isValid: false,
+                    penaltyScore: -1.5,
+                    message: '✗ Certificat SSL incomplet ou invalide',
+                    severity: 'high'
+                };
+            }
+            
+            // Timeout - on considère comme OK
+            return {
+                isValid: true,
+                penaltyScore: 0,
+                message: '✓ Certificat SSL présent',
+                severity: 'safe'
+            };
+        }
     } catch (error) {
         return {
             isValid: false,
