@@ -4,6 +4,7 @@
  */
 
 import { analyzeSite } from './blocklist.js';
+import { analyzeSecurityFeatures } from './securityAnalyzer.js';
 import { calculateScore } from './scoreCalculator.js';
 import { 
     displayURL, 
@@ -12,26 +13,44 @@ import {
     showErrorState 
 } from './uiManager.js';
 
-// Variable globale pour stocker le hostname actuel
+// Variables globales pour stocker les informations du site
 let currentHostname = null;
+let currentURL = null;
 
 /**
  * Effectue l'analyse complète d'un site
- * @param {string} hostname - Nom d'hôte à analyser
+ * @param {string} url - URL complète du site
+ * @param {string} hostname - Nom d'hôte du site
  */
-async function performAnalysis(hostname) {
+async function performAnalysis(url, hostname) {
     // Afficher l'état de chargement
     showLoadingState();
     
     try {
-        // Analyser le site avec les blocklists
-        const matches = await analyzeSite(hostname);
+        // 1. Analyser le site avec les blocklists
+        const blocklistMatches = await analyzeSite(hostname);
         
-        // Calculer le score
-        const score = calculateScore(matches);
+        // 2. Analyser les caractéristiques de sécurité
+        const securityResults = await analyzeSecurityFeatures(url, hostname);
         
-        // Afficher les résultats
-        displayScore(score, matches);
+        // 3. Calculer le score final
+        const finalScore = calculateScore(
+            blocklistMatches, 
+            securityResults.totalPenalty
+        );
+        
+        // 4. Afficher les résultats avec les messages de sécurité
+        displayScore(finalScore, blocklistMatches, securityResults.messages);
+        
+        // Log pour debug
+        console.log('Analyse terminée:', {
+            score: finalScore,
+            blocklistMatches: blocklistMatches.length,
+            securityPenalty: securityResults.totalPenalty,
+            securityChecks: securityResults.checks,
+            securityMessages: securityResults.messages
+        });
+        
     } catch (error) {
         console.error('Erreur lors de l\'analyse:', error);
         showErrorState('Impossible d\'analyser cette page');
@@ -47,12 +66,14 @@ function getCurrentURL() {
         chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
             if (tabs.length > 0) {
                 try {
-                    const url = new URL(tabs[0].url);
-                    currentHostname = url.hostname;
+                    currentURL = tabs[0].url;
+                    const urlObj = new URL(currentURL);
+                    currentHostname = urlObj.hostname;
+                    
                     displayURL(currentHostname);
                     
                     // Lancer l'analyse automatiquement
-                    performAnalysis(currentHostname);
+                    performAnalysis(currentURL, currentHostname);
                 } catch (error) {
                     console.error('Erreur lors de la récupération de l\'URL:', error);
                     showErrorState('URL invalide ou inaccessible');
@@ -61,9 +82,10 @@ function getCurrentURL() {
         });
     } else {
         // Fallback pour les tests locaux
+        currentURL = 'https://example.com';
         currentHostname = 'example.com';
         displayURL(currentHostname);
-        performAnalysis(currentHostname);
+        performAnalysis(currentURL, currentHostname);
     }
 }
 
@@ -71,8 +93,8 @@ function getCurrentURL() {
  * Gestionnaire du bouton "Vérifier ce site"
  */
 function handleCheckButton() {
-    if (currentHostname) {
-        performAnalysis(currentHostname);
+    if (currentHostname && currentURL) {
+        performAnalysis(currentURL, currentHostname);
     } else {
         showErrorState('Aucun site à analyser');
     }
@@ -83,7 +105,17 @@ function handleCheckButton() {
  */
 function handleReportButton() {
     if (currentHostname) {
-        alert(`Fonctionnalité de signalement à implémenter pour : ${currentHostname}`);
+        // Préparer un rapport détaillé
+        const reportInfo = {
+            url: currentURL,
+            hostname: currentHostname,
+            timestamp: new Date().toISOString()
+        };
+        
+        alert(`Fonctionnalité de signalement à implémenter.\n\nSite: ${currentHostname}\nURL: ${currentURL}`);
+        
+        // TODO: Envoyer le rapport à un backend
+        console.log('Rapport à envoyer:', reportInfo);
     } else {
         alert('Aucun site à signaler');
     }

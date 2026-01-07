@@ -39,11 +39,15 @@ export function displayTags(tags) {
         const tagEl = document.createElement('span');
         tagEl.className = 'wt-tag';
         
+        // Déterminer la classe CSS en fonction du contenu du tag
         if (tag.includes('✓')) {
             tagEl.classList.add('wt-tag-safe');
         } else if (tag.includes('✗')) {
             tagEl.classList.add('wt-tag-risk');
+        } else if (tag.includes('⚠')) {
+            tagEl.classList.add('wt-tag-warning');
         } else {
+            // Par défaut, utiliser warning pour les autres cas
             tagEl.classList.add('wt-tag-warning');
         }
         
@@ -55,10 +59,17 @@ export function displayTags(tags) {
 /**
  * Affiche le score complet avec toutes les informations
  * @param {number} score - Score calculé
- * @param {string[]} matches - Liste des correspondances
+ * @param {string[]} matches - Liste des correspondances blocklist
+ * @param {Array} securityMessages - Messages de sécurité
  */
-export function displayScore(score, matches) {
-    const scoreInfo = getScoreInfo(score, matches);
+export function displayScore(score, matches, securityMessages = []) {
+    // Filtrer uniquement les messages problématiques (qui ne contiennent pas ✓)
+    const problematicMessages = securityMessages.filter(msg => 
+        msg.text && !msg.text.includes('✓')
+    );
+    
+    // Récupérer les informations de score avec uniquement les messages problématiques
+    const scoreInfo = getScoreInfo(score, matches, problematicMessages);
     
     // Afficher les étoiles
     displayStars(score);
@@ -72,7 +83,7 @@ export function displayScore(score, matches) {
     document.getElementById('wt-score-label').textContent = scoreInfo.label;
     document.getElementById('wt-score-desc').textContent = scoreInfo.desc;
     
-    // Afficher les tags
+    // Afficher les tags (incluant maintenant les messages de sécurité)
     displayTags(scoreInfo.tags);
 }
 
