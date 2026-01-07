@@ -16,7 +16,7 @@ export function checkHTTPS(url) {
         return {
             isSecure: isHTTPS,
             protocol: urlObj.protocol,
-            penaltyScore: isHTTPS ? 0 : -1,
+            penaltyScore: isHTTPS ? 0 : -2,
             message: isHTTPS ? '✓ HTTPS activé' : '✗ Site non sécurisé (HTTP)',
             severity: isHTTPS ? 'safe' : 'high'
         };
@@ -24,7 +24,7 @@ export function checkHTTPS(url) {
         return {
             isSecure: false,
             protocol: 'unknown',
-            penaltyScore: -1,
+            penaltyScore: -2,
             message: '✗ Protocole invalide',
             severity: 'high'
         };
@@ -60,7 +60,7 @@ export async function checkDomainAge(hostname) {
     }
     
     // Vérifier les TLDs suspects
-    const suspiciousTLDs = ['.tk', '.ml', '.ga', '.cf', '.gq', '.xyz', '.top', '.work', '.click'];
+    const suspiciousTLDs = ['.tk', '.ml', '.ga', '.cf', '.gq', '.xyz', '.top', '.work', '.click','.cr','.st','.su','.ru'];
     const hasSuspiciousTLD = suspiciousTLDs.some(tld => hostname.endsWith(tld));
     
     if (hasSuspiciousTLD) {
