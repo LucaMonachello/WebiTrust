@@ -139,6 +139,32 @@ function init() {
     if (reportBtn) {
         reportBtn.addEventListener('click', handleReportButton);
     }
+
+    // À mettre dans la fonction init() de popup.js
+    const toggleSwitch = document.querySelector('#checkbox');
+
+    function switchTheme(e) {
+        if (e.target.checked) {
+            document.body.classList.add('light-theme');
+            // Optionnel : enregistre le choix pour la prochaine ouverture
+            localStorage.setItem('theme', 'light');
+        } else {
+            document.body.classList.remove('light-theme');
+            localStorage.setItem('theme', 'dark');
+        }
+    }
+
+    // Écouteur de clic sur le bouton
+    if (toggleSwitch) {
+        toggleSwitch.addEventListener('change', switchTheme, false);
+
+        // Vérifie si l'utilisateur avait déjà choisi le mode clair auparavant
+        const currentTheme = localStorage.getItem('theme');
+        if (currentTheme === 'light') {
+            toggleSwitch.checked = true;
+            document.body.classList.add('light-theme');
+        }
+    }
 }
 
 // Initialiser au chargement du DOM
