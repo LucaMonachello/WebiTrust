@@ -4,7 +4,7 @@
  */
 
 import { analyzeSite } from './blocklist.js';
-import { analyzeSecurityFeatures } from './securityAnalyzer.js';
+import { analyzeSecurityFeatures, checkAccessibility } from './securityAnalyzer.js';
 import { calculateScore } from './scoreCalculator.js';
 import { 
     displayURL, 
@@ -22,37 +22,52 @@ let currentURL = null;
  * @param {string} url - URL complète du site
  * @param {string} hostname - Nom d'hôte du site
  */
+
 async function performAnalysis(url, hostname) {
-    // Afficher l'état de chargement
     showLoadingState();
-    
+
     try {
-        // 1. Analyser le site avec les blocklists
+        // 0️⃣ Vérification d’accessibilité (DNS / HTTP)
+        const accessibilityCheck = await checkAccessibility(url);
+
+        // ❌ Site inaccessible → STOP analyse
+        if (!accessibilityCheck.isAccessible) {
+            displayScore(
+                0,
+                [],
+                [{
+                    text: accessibilityCheck.message,
+                    severity: accessibilityCheck.severity
+                }]
+            );
+
+            console.warn('Analyse stoppée : site inaccessible', accessibilityCheck);
+            return; // ⛔ arrêt total
+        }
+
+        // 1️⃣ Blocklists
         const blocklistMatches = await analyzeSite(hostname);
-        
-        // 2. Analyser les caractéristiques de sécurité
+
+        // 2️⃣ Sécurité technique
         const securityResults = await analyzeSecurityFeatures(url, hostname);
-        
-        // 3. Calculer le score final
+
+        // 3️⃣ Score final
         const finalScore = calculateScore(
-            blocklistMatches, 
+            blocklistMatches,
             securityResults.totalPenalty
         );
-        
-        // 4. Afficher les résultats avec les messages de sécurité
+
+        // 4️⃣ Affichage
         displayScore(finalScore, blocklistMatches, securityResults.messages);
-        
-        // Log pour debug
+
         console.log('Analyse terminée:', {
             score: finalScore,
             blocklistMatches: blocklistMatches.length,
-            securityPenalty: securityResults.totalPenalty,
-            securityChecks: securityResults.checks,
-            securityMessages: securityResults.messages
+            securityPenalty: securityResults.totalPenalty
         });
-        
+
     } catch (error) {
-        console.error('Erreur lors de l\'analyse:', error);
+        console.error('Erreur analyse:', error);
         showErrorState('Impossible d\'analyser cette page');
     }
 }

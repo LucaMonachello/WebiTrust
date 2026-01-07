@@ -8,6 +8,59 @@
  * @param {string} url - URL complète du site
  * @returns {Object} Résultat de la vérification
  */
+
+export async function checkAccessibility(url) {
+    try {
+        const response = await fetch(url, {
+            method: 'HEAD',
+            mode: 'no-cors'
+        });
+
+        // Si le navigateur bloque la lecture (no-cors),
+        // mais que la requête passe, on considère le site accessible
+        if (!response || response.type === 'opaque') {
+            return {
+                isAccessible: true,
+                status: 'unknown',
+                penaltyScore: 0,
+                message: '✓ Site accessible (réponse opaque)',
+                severity: 'safe'
+            };
+        }
+
+        if (response.ok) {
+            return {
+                isAccessible: true,
+                status: response.status,
+                penaltyScore: 0,
+                message: '✓ Site accessible',
+                severity: 'safe'
+            };
+        }
+
+        // Erreurs HTTP (404, 500, etc.)
+        return {
+            isAccessible: false,
+            status: response.status,
+            penaltyScore: -2,
+            message: `✗ Erreur HTTP ${response.status}`,
+            severity: response.status === 404 ? 'medium' : 'high'
+        };
+
+    } catch (error) {
+        // Erreur réseau : DNS, serveur down, URL invalide…
+        return {
+            isAccessible: false,
+            status: 'network_error',
+            penaltyScore: -3,
+            message: '✗ Site inaccessible (DNS ou réseau)',
+            severity: 'high'
+        };
+    }
+}
+
+
+
 export function checkHTTPS(url) {
     try {
         const urlObj = new URL(url);
