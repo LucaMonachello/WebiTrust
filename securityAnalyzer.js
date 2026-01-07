@@ -42,7 +42,7 @@ export async function checkDomainAge(hostname) {
     // Pour l'instant, on peut détecter certains patterns suspects
     
     // Vérifier les préfixes suspects (ww2, ww3, etc.)
-    const suspiciousPrefixes = /^(ww\d+|w{3,}\d*)\./i;
+    const suspiciousPrefixes = /^ww\d+\./i;
     if (suspiciousPrefixes.test(hostname)) {
         return {
             isSuspicious: true,
@@ -149,7 +149,7 @@ export async function checkSSLCertificate(url) {
                 return {
                     isValid: false,
                     penaltyScore: -1.5,
-                    message: '✗ Certificat SSL incomplet ou invalide',
+                    message: '✗ Certificat SSL invalide ou expiré',
                     severity: 'high'
                 };
             }
