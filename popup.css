@@ -16,10 +16,27 @@
     "Segoe UI", sans-serif;
 }
 
+/* ========================================================
+   TRANSITION SYNCHRONISÉE & RAPIDE (0.35s)
+   ======================================================== */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
+  /* 0.35s est plus nerveux et masque les décalages de rendu */
+  transition: all 0.35s ease-in-out;
+}
+
+/* --- EXCEPTION : LE CERCLE DOIT ÊTRE INSTANTANÉ --- */
+.wt-score-ring,
+.wt-score-ring::before {
+  transition: none !important;
+}
+
+/* --- OPTIMISATION : Force le GPU sur les éléments lents --- */
+.wt-btn-ghost,
+.wt-loading {
+  will-change: background, color, border-color;
 }
 
 html,
@@ -37,7 +54,6 @@ body {
 }
 
 /* Container principal */
-
 .wt-container {
   padding: 14px 14px 10px;
   display: flex;
@@ -46,7 +62,6 @@ body {
 }
 
 /* Header */
-
 .wt-header {
   display: flex;
   align-items: center;
@@ -85,7 +100,6 @@ body {
 }
 
 /* Corps */
-
 .wt-main {
   margin-top: 4px;
   display: flex;
@@ -98,7 +112,6 @@ body {
 }
 
 /* URL */
-
 .wt-url {
   font-size: 11px;
   display: flex;
@@ -117,7 +130,6 @@ body {
 }
 
 /* Carte score */
-
 .wt-score-card {
   margin-top: 4px;
   display: flex;
@@ -189,7 +201,6 @@ body {
 }
 
 /* Tags */
-
 .wt-tags {
   margin-top: 4px;
   display: flex;
@@ -224,7 +235,6 @@ body {
 }
 
 /* Footer / boutons */
-
 .wt-footer {
   margin-top: 2px;
   display: flex;
@@ -239,7 +249,6 @@ body {
   padding: 8px 10px;
   cursor: pointer;
   border: 1px solid transparent;
-  transition: all 0.16s ease-out;
   font-weight: 500;
 }
 
@@ -271,7 +280,6 @@ body {
 }
 
 /* Loader */
-
 .wt-loading {
   margin-top: 6px;
   padding: 6px 10px;
@@ -299,7 +307,6 @@ body {
 }
 
 /* Disclaimer */
-
 .wt-disclaimer {
   margin: 2px 2px 0;
   font-size: 9px;
@@ -307,23 +314,9 @@ body {
   text-align: center;
 }
 
-/* État couleur en fonction du score (à ajouter/retirer en JS sur .wt-score-ring ou .wt-score-label) */
-
-.wt-score-good {
-  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.4);
-}
-
-.wt-score-medium {
-  box-shadow: 0 0 0 1px rgba(234, 179, 8, 0.45);
-}
-
-.wt-score-bad {
-  box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.6);
-}
-
 /* 1. Positionnement dans le header */
 .theme-switch-wrapper {
-  margin-left: auto; /* Pousse le bloc tout à droite dans un header flex */
+  margin-left: auto;
   display: flex;
   align-items: center;
 }
@@ -348,13 +341,12 @@ body {
   position: absolute;
   cursor: pointer;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.3); /* Fond sombre transparent */
+  background-color: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 34px;
-  transition: 0.4s;
   display: flex;
   align-items: center;
-  justify-content: space-around; /* Aligne les icônes à l'intérieur */
+  justify-content: space-around;
   padding: 0 4px;
   overflow: hidden;
 }
@@ -362,7 +354,7 @@ body {
 /* 4. Les icônes 🌙 et ☀️ */
 .slider span {
   font-size: 12px;
-  z-index: 1; /* Derrière le bouton blanc */
+  z-index: 1;
   user-select: none;
 }
 
@@ -375,9 +367,8 @@ body {
   left: 3px;
   bottom: 2px;
   background-color: white;
-  transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   border-radius: 50%;
-  z-index: 2; /* Passe au-dessus des icônes */
+  z-index: 2;
   box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
@@ -387,13 +378,100 @@ input:checked + .slider {
 }
 
 input:checked + .slider:before {
-  transform: translateX(22px); /* Déplacement fluide vers la droite */
+  transform: translateX(22px);
 }
-
-/* Animations */
 
 @keyframes wt-spin {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* ========================================================
+   MODE CLAIR (LIGHT THEME)
+   ======================================================== */
+
+/* Configuration de base */
+body.light-theme {
+  background: radial-gradient(circle at top left, #f1f5f9 0, #cbd5e1 100%);
+  color: #0f172a;
+}
+
+/* Carte principale blanche */
+body.light-theme .wt-main {
+  background: linear-gradient(150deg, #ffffff, #f8fafc);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Header (Texte blanc) */
+body.light-theme .wt-header {
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+}
+body.light-theme .wt-title,
+body.light-theme .wt-subtitle {
+  color: #ffffff;
+}
+
+/* --- FIX DU SCORE (Fond du rail gris clair au lieu de noir) --- */
+body.light-theme .wt-score-ring {
+  background-color: #e2e8f0; /* Remplace le noir du rail */
+}
+body.light-theme .wt-score-ring::before {
+  background: #ffffff; /* Centre blanc */
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+/* Textes */
+body.light-theme #wt-score-value { color: #0f172a; }
+body.light-theme .wt-url-value { color: #0f172a; }
+body.light-theme .wt-score-desc, 
+body.light-theme .wt-score-unit, 
+body.light-theme .wt-url-label { 
+  color: #64748b;
+}
+
+/* --- TAGS : COULEURS VIVES SELON CRITICITÉ --- */
+body.light-theme .wt-tag {
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+  color: #475569;
+}
+
+/* Tag Vert (Sûr) */
+body.light-theme .wt-tag-safe {
+  background: #dcfce7;
+  border-color: #86efac;
+  color: #166534;
+}
+
+/* Tag Jaune (Prudence) */
+body.light-theme .wt-tag-warning {
+  background: #fef9c3;
+  border-color: #fde047;
+  color: #854d0e;
+}
+
+/* Tag Rouge (Risque) */
+body.light-theme .wt-tag-risk {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #991b1b;
+}
+
+/* Bouton Signaler Blanc */
+body.light-theme .wt-btn-ghost {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+body.light-theme .wt-btn-ghost:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+/* Loading barre */
+body.light-theme .wt-loading {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  color: #64748b;
 }

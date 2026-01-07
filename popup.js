@@ -140,7 +140,6 @@ function init() {
         reportBtn.addEventListener('click', handleReportButton);
     }
 
-    // À mettre dans la fonction init() de popup.js
     const toggleSwitch = document.querySelector('#checkbox');
 
     function switchTheme(e) {
