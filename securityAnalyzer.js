@@ -41,6 +41,17 @@ export async function checkDomainAge(hostname) {
     // Simulation - En production, appeler une API WHOIS
     // Pour l'instant, on peut détecter certains patterns suspects
     
+    // Vérifier les préfixes suspects (ww2, ww3, etc.)
+    const suspiciousPrefixes = /^ww\d+\./i;
+    if (suspiciousPrefixes.test(hostname)) {
+        return {
+            isSuspicious: true,
+            penaltyScore: -1.0,
+            message: '⚠ Préfixe de domaine suspect (ww2, ww3, etc.)',
+            severity: 'medium'
+        };
+    }
+    
     const suspiciousPatterns = [
         /\d{4,}/, // Beaucoup de chiffres
         /-\d+$/, // Se termine par -chiffres
@@ -105,19 +116,27 @@ export async function checkSSLCertificate(url) {
             };
         }
         
-        // Pour HTTPS, on peut vérifier si la connexion fonctionne
-        // Une tentative de fetch va échouer si le certificat est invalide
+        // Tester la connexion SSL avec une image de 1px
         try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 3000);
-            
-            await fetch(url, {
-                method: 'HEAD',
-                mode: 'no-cors', // Éviter les erreurs CORS
-                signal: controller.signal
+            await new Promise((resolve, reject) => {
+                const img = new Image();
+                const timeout = setTimeout(() => {
+                    reject(new Error('timeout'));
+                }, 5000);
+                
+                img.onload = () => {
+                    clearTimeout(timeout);
+                    resolve();
+                };
+                
+                img.onerror = (e) => {
+                    clearTimeout(timeout);
+                    reject(new Error('ssl_error'));
+                };
+                
+                // Ajouter un timestamp pour éviter le cache
+                img.src = `${urlObj.origin}/favicon.ico?_t=${Date.now()}`;
             });
-            
-            clearTimeout(timeoutId);
             
             return {
                 isValid: true,
@@ -126,17 +145,16 @@ export async function checkSSLCertificate(url) {
                 severity: 'safe'
             };
         } catch (error) {
-            // Si c'est une erreur de certificat, le navigateur bloque
-            if (error.name === 'TypeError' || error.message.includes('certificate')) {
+            if (error.message === 'ssl_error') {
                 return {
                     isValid: false,
-                    penaltyScore: -2.0,
+                    penaltyScore: -1.5,
                     message: '✗ Certificat SSL invalide ou expiré',
-                    severity: 'critical'
+                    severity: 'high'
                 };
             }
             
-            // Timeout ou autre erreur - on considère comme OK
+            // Timeout - on considère comme OK
             return {
                 isValid: true,
                 penaltyScore: 0,
