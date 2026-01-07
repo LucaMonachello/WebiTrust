@@ -41,6 +41,17 @@ export async function checkDomainAge(hostname) {
     // Simulation - En production, appeler une API WHOIS
     // Pour l'instant, on peut détecter certains patterns suspects
     
+    // Vérifier les préfixes suspects (ww2, ww3, etc.)
+    const suspiciousPrefixes = /^ww\d+\./i;
+    if (suspiciousPrefixes.test(hostname)) {
+        return {
+            isSuspicious: true,
+            penaltyScore: -1.0,
+            message: '⚠ Préfixe de domaine suspect (ww2, ww3, etc.)',
+            severity: 'medium'
+        };
+    }
+    
     const suspiciousPatterns = [
         /\d{4,}/, // Beaucoup de chiffres
         /-\d+$/, // Se termine par -chiffres
@@ -105,45 +116,14 @@ export async function checkSSLCertificate(url) {
             };
         }
         
-        // Pour HTTPS, on peut vérifier si la connexion fonctionne
-        // Une tentative de fetch va échouer si le certificat est invalide
-        try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 3000);
-            
-            await fetch(url, {
-                method: 'HEAD',
-                mode: 'no-cors', // Éviter les erreurs CORS
-                signal: controller.signal
-            });
-            
-            clearTimeout(timeoutId);
-            
-            return {
-                isValid: true,
-                penaltyScore: 0,
-                message: '✓ Certificat SSL valide',
-                severity: 'safe'
-            };
-        } catch (error) {
-            // Si c'est une erreur de certificat, le navigateur bloque
-            if (error.name === 'TypeError' || error.message.includes('certificate')) {
-                return {
-                    isValid: false,
-                    penaltyScore: -2.0,
-                    message: '✗ Certificat SSL invalide ou expiré',
-                    severity: 'critical'
-                };
-            }
-            
-            // Timeout ou autre erreur - on considère comme OK
-            return {
-                isValid: true,
-                penaltyScore: 0,
-                message: '✓ Certificat SSL présent',
-                severity: 'safe'
-            };
-        }
+        // Pour HTTPS, on considère le certificat comme valide si le site charge
+        // Le navigateur aurait déjà bloqué l'accès si le certificat était vraiment invalide
+        return {
+            isValid: true,
+            penaltyScore: 0,
+            message: '✓ Certificat SSL présent',
+            severity: 'safe'
+        };
     } catch (error) {
         return {
             isValid: false,
