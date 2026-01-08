@@ -15,3 +15,18 @@ async function run() {
 }
 
 run();
+
+//{
+//  "isSecure": false,
+//  "protocol": "https",
+//  "penaltyScore": -30,
+//  "message": "✗ URL détectée comme risquée par Cloudflare Radar",
+//  "severity": "high",
+//  "details": {
+//    "malicious": true,
+//    "phishing": true,
+//    "malware": false,
+//    "spam": false,
+//    "crypto_mining": false,
+//    "command_and_control": false//  }
+//}
