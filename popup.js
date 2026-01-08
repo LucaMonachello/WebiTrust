@@ -6,7 +6,7 @@
 import { analyzeSite } from './blocklist.js';
 import { analyzeSecurityFeatures, checkAccessibility } from './securityAnalyzer.js';
 import { calculateScore } from './scoreCalculator.js';
-//import { calculateScoreApi } from './ApiScoreCalculator.js';
+import { calculateScoreApi } from './ApiScoreCalculator.js';
 import { 
     displayURL, 
     displayScore, 
