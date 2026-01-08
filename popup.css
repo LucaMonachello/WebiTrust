@@ -23,7 +23,6 @@
 *::before,
 *::after {
   box-sizing: border-box;
-  /* 0.35s est plus nerveux et masque les décalages de rendu */
   transition: all 0.35s ease-in-out;
 }
 
@@ -33,9 +32,9 @@
   transition: none !important;
 }
 
-/* --- OPTIMISATION : Force le GPU sur les éléments lents --- */
+/* --- OPTIMISATION --- */
 .wt-btn-ghost,
-.wt-loading {
+.wt-btn-primary {
   will-change: background, color, border-color;
 }
 
@@ -252,47 +251,28 @@ body {
   font-weight: 500;
 }
 
-.wt-btn-primary {
-  background: linear-gradient(135deg, #4f46e5, #6366f1);
-  color: #f9fafb;
-  box-shadow: 0 10px 30px rgba(79, 70, 229, 0.7);
-}
-
-.wt-btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 14px 32px rgba(79, 70, 229, 0.9);
-}
-
-.wt-btn-primary:active {
-  transform: translateY(0);
-  box-shadow: 0 6px 18px rgba(79, 70, 229, 0.7);
-}
-
+/* MODIFICATION : Les DEUX boutons ont le même style (comme le Header) */
+.wt-btn-primary,
 .wt-btn-ghost {
-  background: rgba(15, 23, 42, 0.85);
-  color: var(--wt-text-muted);
-  border-color: rgba(148, 163, 184, 0.4);
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 64, 175, 0.6));
+  color: #f9fafb;
+  box-shadow: 0 10px 30px rgba(79, 70, 229, 0.4);
+  border: 1px solid rgba(148, 163, 184, 0.2);
 }
 
+.wt-btn-primary:hover,
 .wt-btn-ghost:hover {
-  border-color: rgba(148, 163, 184, 0.7);
-  color: #e5e7eb;
+  transform: translateY(-1px);
+  box-shadow: 0 14px 32px rgba(79, 70, 229, 0.6);
+}
+
+.wt-btn-primary:active,
+.wt-btn-ghost:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 18px rgba(79, 70, 229, 0.4);
 }
 
 /* Loader */
-.wt-loading {
-  margin-top: 6px;
-  padding: 6px 10px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 11px;
-  color: var(--wt-text-muted);
-  border-radius: 999px;
-  background: rgba(15, 23, 42, 0.85);
-  border: 1px dashed rgba(148, 163, 184, 0.5);
-}
-
 .wt-loader {
   width: 10px;
   height: 10px;
@@ -412,6 +392,14 @@ body.light-theme .wt-subtitle {
   color: #ffffff;
 }
 
+/* Les DEUX boutons en mode clair (Bleu vif comme le header) */
+body.light-theme .wt-btn-primary,
+body.light-theme .wt-btn-ghost {
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  color: #ffffff; /* Texte blanc sur fond bleu */
+  border-color: transparent;
+}
+
 /* --- FIX DU SCORE (Fond du rail gris clair au lieu de noir) --- */
 body.light-theme .wt-score-ring {
   background-color: #e2e8f0; /* Remplace le noir du rail */
@@ -458,19 +446,8 @@ body.light-theme .wt-tag-risk {
   color: #991b1b;
 }
 
-/* Bouton Signaler Blanc */
-body.light-theme .wt-btn-ghost {
-  background: #ffffff;
-  border-color: #cbd5e1;
-  color: #475569;
-}
-body.light-theme .wt-btn-ghost:hover {
-  background: #f1f5f9;
-  color: #0f172a;
-}
-
 /* Loading barre */
-body.light-theme .wt-loading {
+body.light-theme {
   background: #f8fafc;
   border-color: #e2e8f0;
   color: #64748b;

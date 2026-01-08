@@ -53,11 +53,9 @@ export function displayURL(hostname) {
 
 export function showLoadingState() {
     document.getElementById('wt-score-label').textContent = 'Analyse...';
-    document.getElementById('wt-loading').classList.remove('hidden');
-}
+    }
 
 export function showErrorState(message) {
     document.getElementById('wt-score-label').textContent = 'Erreur';
     document.getElementById('wt-score-desc').textContent = message;
-    document.getElementById('wt-loading').classList.add('hidden');
 }
