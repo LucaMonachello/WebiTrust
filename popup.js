@@ -53,9 +53,9 @@ async function performAnalysis(url, hostname, needapi = False) {
         const securityResults = await analyzeSecurityFeatures(url, hostname);
 
         // Calc via API
-        if (needapi){
-            //securityResults.totalPenalty += calculateScoreApi(url);
-        }
+        /**if (needapi){
+            securityResults.totalPenalty += calculateScoreApi(url);
+        }*/
 
         // 3️⃣ Score final
         const finalScore = calculateScore(
