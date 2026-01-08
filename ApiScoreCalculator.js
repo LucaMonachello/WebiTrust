@@ -8,8 +8,8 @@
  * @param {string} url - URL complète du site
  * @returns {number} Score entier entre 0 et 100
  */
-const { main: scanCloudflareRadar } = require(".API/API_CF");
-const { main: scanVirusTotal } = require(".API/API_VT");
+const { main: scanCloudflareRadar } = require("./API/API_CF");
+const { main: scanVirusTotal } = require("./API/API_VT");
 
 
 export async function calculateScoreApi(url) {
