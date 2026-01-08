@@ -42,7 +42,7 @@ export async function checkAccessibility(url) {
         return {
             isAccessible: false,
             status: response.status,
-            penaltyScore: -2,
+            penaltyScore: 0,
             message: `✗ Erreur HTTP ${response.status}`,
             severity: response.status === 404 ? 'medium' : 'high'
         };
@@ -52,7 +52,7 @@ export async function checkAccessibility(url) {
         return {
             isAccessible: false,
             status: 'network_error',
-            penaltyScore: -3,
+            penaltyScore: 0,
             message: '✗ Site inaccessible (DNS ou réseau)',
             severity: 'high'
         };
@@ -69,7 +69,7 @@ export function checkHTTPS(url) {
         return {
             isSecure: isHTTPS,
             protocol: urlObj.protocol,
-            penaltyScore: isHTTPS ? 0 : -2,
+            penaltyScore: isHTTPS ? 0 : -10,
             message: isHTTPS ? '✓ HTTPS activé' : '✗ Site non sécurisé (HTTP)',
             severity: isHTTPS ? 'safe' : 'high'
         };
@@ -77,7 +77,7 @@ export function checkHTTPS(url) {
         return {
             isSecure: false,
             protocol: 'unknown',
-            penaltyScore: -2,
+            penaltyScore: -10,
             message: '✗ Protocole invalide',
             severity: 'high'
         };
@@ -99,7 +99,7 @@ export async function checkDomainAge(hostname) {
     if (suspiciousPrefixes.test(hostname)) {
         return {
             isSuspicious: true,
-            penaltyScore: -1.0,
+            penaltyScore: -10,
             message: '⚠ Préfixe de domaine suspect (ww2, ww3, etc.)',
             severity: 'medium'
         };
@@ -135,7 +135,7 @@ export async function checkDomainAge(hostname) {
     if (isSuspicious) {
         return {
             isSuspicious: true,
-            penaltyScore: -1.0,
+            penaltyScore: -10,
             message: `⚠ ${suspicionReason}`,
             severity: 'medium'
         };
@@ -163,7 +163,7 @@ export async function checkSSLCertificate(url) {
         if (urlObj.protocol === 'http:') {
             return {
                 isValid: false,
-                penaltyScore: -1,
+                penaltyScore: -15,
                 message: '✗ Aucun certificat SSL',
                 severity: 'high'
             };
@@ -201,7 +201,7 @@ export async function checkSSLCertificate(url) {
             if (error.message === 'ssl_error') {
                 return {
                     isValid: false,
-                    penaltyScore: -1.5,
+                    penaltyScore: -15,
                     message: '✗ Certificat SSL invalide ou expiré',
                     severity: 'high'
                 };
@@ -218,7 +218,7 @@ export async function checkSSLCertificate(url) {
     } catch (error) {
         return {
             isValid: false,
-            penaltyScore: -1.0,
+            penaltyScore: -15,
             message: '⚠ Impossible de vérifier le certificat',
             severity: 'medium'
         };
