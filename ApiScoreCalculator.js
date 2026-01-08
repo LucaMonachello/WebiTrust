@@ -21,6 +21,8 @@ export async function calculateScoreApi(url) {
         const resultVT = await scanVirusTotal(url);
         //console.log(JSON.stringify(result, null, 2));
         
+        
+
         score += 1;
 
 
