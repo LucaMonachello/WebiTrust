@@ -118,8 +118,8 @@ Que ce soit via des signalements, des suggestions d’améliorations ou du code,
 
 🧑‍💻 Auteur
 
-Luca Monachello
-Noa Hell
-Hugo Cordonier
-Evan Haberer
+Luca Monachello // 
+Noa Hell // 
+Hugo Cordonier // 
+Evan Haberer // 
 Louison Fink
