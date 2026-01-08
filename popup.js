@@ -24,7 +24,7 @@ let currentURL = null;
  * @param {string} hostname - Nom d'hôte du site
  */
 
-async function performAnalysis(url, hostname, needapi = False) {
+async function performAnalysis(url, hostname, needapi = false) {
     showLoadingState();
 
     try {
@@ -115,7 +115,7 @@ function getCurrentURL() {
  */
 function handleCheckButton() {
     if (currentHostname && currentURL) {
-        performAnalysis(currentURL, currentHostname, needapi = True);
+        performAnalysis(currentURL, currentHostname, needapi = true);
     } else {
         showErrorState('Aucun site à analyser');
     }
