@@ -8,13 +8,65 @@
  * @param {string} url - URL complète du site
  * @returns {number} Score entier entre 0 et 100
  */
-export function calculateScoreApi(url) {
+const { main: scanCloudflareRadar } = require("./API_CF");
+const { main: scanVirusTotal } = require("./API_VT");
 
-    
 
-    // 3. Sécurité : On s'assure que le score reste entre 0 et 100
-    return Math.max(0, Math.min(100, Math.round(score)));
+export async function calculateScoreApi(url) {
+
+    try {
+        const resultF = await scanCloudflareRadar(url);
+        //console.log(JSON.stringify(result, null, 2));
+        
+        const resultVT = await scanVirusTotal(url);
+        //console.log(JSON.stringify(result, null, 2));
+        
+        score += 1;
+
+
+
+
+        // Sécurité : On s'assure que le score reste entre 0 et 100
+        return Math.max(0, Math.min(100, Math.round(score)));
+
+    } catch (e) {
+        console.error("Erreur API :", e.message);
+        process.exit(1);
+    }
 }
+
+
+async function run() {
+  try {
+    
+  } catch (e) {
+    console.error("Erreur VirusTotal:", e.message || e);
+    process.exit(1);
+  }
+}
+
+/** {
+  "vtScore": "2/97",
+  "reputation": -43
+}
+{
+  "isSecure": false,
+  "protocol": "https",
+  "penaltyScore": -30,
+  "message": "✗ URL détectée comme risquée par Cloudflare Radar",
+  "severity": "high",
+  "details": {
+    "malicious": true,
+    "phishing": true,
+    "malware": false,
+    "spam": false,
+    "crypto_mining": false,
+    "command_and_control": false
+  }
+}*/
+
+
+
 
 /**
  * Fournit les textes et styles associés au score
