@@ -115,7 +115,7 @@ function getCurrentURL() {
  */
 function handleCheckButton() {
     if (currentHostname && currentURL) {
-        performAnalysis(currentURL, currentHostname, /**true*/);
+        performAnalysis(currentURL, currentHostname, true);
     } else {
         showErrorState('Aucun site à analyser');
     }
