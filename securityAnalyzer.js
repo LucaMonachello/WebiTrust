@@ -9,6 +9,7 @@
  * @returns {Object} Résultat de la vérification
  */
 
+/**
 export async function checkAccessibility(url) {
     try {
         const response = await fetch(url, {
@@ -42,7 +43,7 @@ export async function checkAccessibility(url) {
         return {
             isAccessible: false,
             status: response.status,
-            penaltyScore: -2,
+            penaltyScore: 0,
             message: `✗ Erreur HTTP ${response.status}`,
             severity: response.status === 404 ? 'medium' : 'high'
         };
@@ -52,9 +53,90 @@ export async function checkAccessibility(url) {
         return {
             isAccessible: false,
             status: 'network_error',
-            penaltyScore: -3,
+            penaltyScore: 0,
             message: '✗ Site inaccessible (DNS ou réseau)',
             severity: 'high'
+        };
+    }
+}
+*/
+
+export async function checkAccessibility(url) {
+    const urlObj = new URL(url);
+
+    // 1️⃣ Test fetch (rapide mais peu fiable)
+    let fetchFailed = false;
+
+    try {
+        const response = await fetch(url, {
+            method: 'HEAD',
+            mode: 'no-cors',
+            cache: 'no-store'
+        });
+
+        if (!response || response.type === 'opaque') {
+            return {
+                isAccessible: true,
+                status: 'opaque',
+                penaltyScore: 0,
+                message: '✓ Site accessible',
+                severity: 'safe'
+            };
+        }
+    } catch (e) {
+        fetchFailed = true;
+    }
+
+    // 2️⃣ Test image (DNS réel + TCP)
+    const imageTest = () =>
+        new Promise((resolve, reject) => {
+            const img = new Image();
+            const timeout = setTimeout(() => {
+                reject('timeout');
+            }, 4000);
+
+            img.onload = () => {
+                clearTimeout(timeout);
+                resolve(true);
+            };
+
+            img.onerror = () => {
+                clearTimeout(timeout);
+                reject('error');
+            };
+
+            img.src = `${urlObj.origin}/favicon.ico?_=${Date.now()}`;
+        });
+
+    try {
+        await imageTest();
+
+        return {
+            isAccessible: true,
+            status: 'image_ok',
+            penaltyScore: 0,
+            message: '✓ Site accessible',
+            severity: 'safe'
+        };
+    } catch (error) {
+        // ❗ fetch + image échouent = vrai problème réseau
+        if (fetchFailed) {
+            return {
+                isAccessible: false,
+                status: 'network_error',
+                penaltyScore: -3,
+                message: '✗ Site inaccessible (DNS ou réseau)',
+                severity: 'high'
+            };
+        }
+
+        // Image bloquée mais site probablement OK
+        return {
+            isAccessible: true,
+            status: 'restricted',
+            penaltyScore: 0,
+            message: '✓ Site accessible (restrictions navigateur)',
+            severity: 'safe'
         };
     }
 }
@@ -69,7 +151,7 @@ export function checkHTTPS(url) {
         return {
             isSecure: isHTTPS,
             protocol: urlObj.protocol,
-            penaltyScore: isHTTPS ? 0 : -2,
+            penaltyScore: isHTTPS ? 0 : -10,
             message: isHTTPS ? '✓ HTTPS activé' : '✗ Site non sécurisé (HTTP)',
             severity: isHTTPS ? 'safe' : 'high'
         };
@@ -77,7 +159,7 @@ export function checkHTTPS(url) {
         return {
             isSecure: false,
             protocol: 'unknown',
-            penaltyScore: -2,
+            penaltyScore: -10,
             message: '✗ Protocole invalide',
             severity: 'high'
         };
@@ -99,7 +181,7 @@ export async function checkDomainAge(hostname) {
     if (suspiciousPrefixes.test(hostname)) {
         return {
             isSuspicious: true,
-            penaltyScore: -1.0,
+            penaltyScore: -10,
             message: '⚠ Préfixe de domaine suspect (ww2, ww3, etc.)',
             severity: 'medium'
         };
@@ -135,7 +217,7 @@ export async function checkDomainAge(hostname) {
     if (isSuspicious) {
         return {
             isSuspicious: true,
-            penaltyScore: -1.0,
+            penaltyScore: -10,
             message: `⚠ ${suspicionReason}`,
             severity: 'medium'
         };
@@ -163,7 +245,7 @@ export async function checkSSLCertificate(url) {
         if (urlObj.protocol === 'http:') {
             return {
                 isValid: false,
-                penaltyScore: -1,
+                penaltyScore: -15,
                 message: '✗ Aucun certificat SSL',
                 severity: 'high'
             };
@@ -201,7 +283,7 @@ export async function checkSSLCertificate(url) {
             if (error.message === 'ssl_error') {
                 return {
                     isValid: false,
-                    penaltyScore: -1.5,
+                    penaltyScore: -15,
                     message: '✗ Certificat SSL invalide ou expiré',
                     severity: 'high'
                 };
@@ -218,7 +300,7 @@ export async function checkSSLCertificate(url) {
     } catch (error) {
         return {
             isValid: false,
-            penaltyScore: -1.0,
+            penaltyScore: -15,
             message: '⚠ Impossible de vérifier le certificat',
             severity: 'medium'
         };

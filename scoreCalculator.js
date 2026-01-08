@@ -25,7 +25,7 @@ export function calculateScore(matches, securityPenalty = 0) {
     // 2. Pénalités techniques (HTTPS, SSL, etc.)
     // Les pénalités venant de securityAnalyzer (ex: -2) sont multipliées par 15
     // pour avoir un impact réel sur une échelle de 100.
-    const technicalImpact = Math.abs(securityPenalty) * 15;
+    const technicalImpact = Math.abs(securityPenalty);
     score -= technicalImpact;
 
     // 3. Sécurité : On s'assure que le score reste entre 0 et 100
