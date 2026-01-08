@@ -1,20 +1,28 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "WebiTrust",
   "description": "Extension permettant de définir un indice sureté d'un site",
   "version": "1.0",
+
   "permissions": [
-    "tabs",
+    "storage",
+    "tabs"
+  ],
+
+  "host_permissions": [
     "http://*/*",
     "https://*/*"
   ],
-  "browser_action": {
+
+  "action": {
     "default_icon": "img/image.png",
     "default_popup": "popup.html"
   },
+
   "icons": {
     "128": "img/image_128.png"
   },
+
   "browser_specific_settings": {
     "gecko": {
       "id": "webitrust@monextension.com"
