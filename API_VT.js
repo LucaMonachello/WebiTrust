@@ -1,7 +1,14 @@
-const fetch = require("node-fetch");
+// API_VT.js
+const fetch = require("node-fetch"); // npm install node-fetch@2
 
-const VT_API_KEY = "3c96eb427a670f6aa49937d9d6652a349efdc8f793ae0d816ccc2b46cafbdf89"; //à modifier avec une variable avantt la publication
-const lien = "https://perfectdeal.su/"; //à modifier avec la variable de l'url
+// ===============================
+// CONFIG
+// ===============================
+const VT_API_KEY = "3c96eb427a670f6aa49937d9d6652a349efdc8f793ae0d816ccc2b46cafbdf89"; // TEST ONLY
+
+// ===============================
+// FONCTIONS INTERNES
+// ===============================
 
 function encodeUrl(url) {
   return Buffer.from(url)
@@ -21,7 +28,7 @@ async function getScores(id) {
     throw new Error(`Erreur VT GET: ${res.status} ${t}`);
   }
 
-  const data = await res.json();
+  const data  = await res.json();
   const attrs = data.data.attributes;
   const stats = attrs.last_analysis_stats;
 
@@ -34,14 +41,23 @@ async function getScores(id) {
   return { vtScore, reputation };
 }
 
-(async () => {
-  try {
-    const id = encodeUrl(lien);
-    const { vtScore, reputation } = await getScores(id);
+// ===============================
+// FONCTION MAIN APPELÉE PAR L’APPLI
+// ===============================
 
-    console.log("VT score       :", vtScore);
-    console.log("Reputation     :", reputation);
-  } catch (e) {
-    console.error(e.message || e);
-  }
-})();
+async function main(url) {
+  const id = encodeUrl(url);
+  const { vtScore, reputation } = await getScores(id);
+  // on ne renvoie QUE ces deux champs
+  return { vtScore, reputation };
+}
+
+// ===============================
+// EXPORT
+// ===============================
+
+module.exports = {
+  main,
+  encodeUrl,
+  getScores
+};
