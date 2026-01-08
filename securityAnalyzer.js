@@ -9,6 +9,7 @@
  * @returns {Object} Résultat de la vérification
  */
 
+/**
 export async function checkAccessibility(url) {
     try {
         const response = await fetch(url, {
@@ -55,6 +56,87 @@ export async function checkAccessibility(url) {
             penaltyScore: 0,
             message: '✗ Site inaccessible (DNS ou réseau)',
             severity: 'high'
+        };
+    }
+}
+*/
+
+export async function checkAccessibility(url) {
+    const urlObj = new URL(url);
+
+    // 1️⃣ Test fetch (rapide mais peu fiable)
+    let fetchFailed = false;
+
+    try {
+        const response = await fetch(url, {
+            method: 'HEAD',
+            mode: 'no-cors',
+            cache: 'no-store'
+        });
+
+        if (!response || response.type === 'opaque') {
+            return {
+                isAccessible: true,
+                status: 'opaque',
+                penaltyScore: 0,
+                message: '✓ Site accessible',
+                severity: 'safe'
+            };
+        }
+    } catch (e) {
+        fetchFailed = true;
+    }
+
+    // 2️⃣ Test image (DNS réel + TCP)
+    const imageTest = () =>
+        new Promise((resolve, reject) => {
+            const img = new Image();
+            const timeout = setTimeout(() => {
+                reject('timeout');
+            }, 4000);
+
+            img.onload = () => {
+                clearTimeout(timeout);
+                resolve(true);
+            };
+
+            img.onerror = () => {
+                clearTimeout(timeout);
+                reject('error');
+            };
+
+            img.src = `${urlObj.origin}/favicon.ico?_=${Date.now()}`;
+        });
+
+    try {
+        await imageTest();
+
+        return {
+            isAccessible: true,
+            status: 'image_ok',
+            penaltyScore: 0,
+            message: '✓ Site accessible',
+            severity: 'safe'
+        };
+    } catch (error) {
+        // ❗ fetch + image échouent = vrai problème réseau
+        if (fetchFailed) {
+            return {
+                isAccessible: false,
+                status: 'network_error',
+                penaltyScore: -3,
+                message: '✗ Site inaccessible (DNS ou réseau)',
+                severity: 'high'
+            };
+        }
+
+        // Image bloquée mais site probablement OK
+        return {
+            isAccessible: true,
+            status: 'restricted',
+            penaltyScore: 0,
+            message: '✓ Site accessible (restrictions navigateur)',
+            severity: 'safe'
         };
     }
 }
