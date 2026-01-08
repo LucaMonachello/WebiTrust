@@ -35,16 +35,6 @@ export async function calculateScoreApi(url) {
     }
 }
 
-
-async function run() {
-  try {
-    
-  } catch (e) {
-    console.error("Erreur VirusTotal:", e.message || e);
-    process.exit(1);
-  }
-}
-
 /** {
   "vtScore": "2/97",
   "reputation": -43
