@@ -6,6 +6,7 @@
 import { analyzeSite } from './blocklist.js';
 import { analyzeSecurityFeatures, checkAccessibility } from './securityAnalyzer.js';
 import { calculateScore } from './scoreCalculator.js';
+import { calculateScoreApi } from './ApiScoreCalculator.js';
 import { 
     displayURL, 
     displayScore, 
@@ -23,7 +24,7 @@ let currentURL = null;
  * @param {string} hostname - Nom d'hôte du site
  */
 
-async function performAnalysis(url, hostname) {
+async function performAnalysis(url, hostname, needapi = False) {
     showLoadingState();
 
     try {
@@ -50,6 +51,11 @@ async function performAnalysis(url, hostname) {
 
         // 2️⃣ Sécurité technique
         const securityResults = await analyzeSecurityFeatures(url, hostname);
+
+        // Calc via API
+        if (needapi){
+            //securityResults.totalPenalty += calculateScoreApi(url);
+        }
 
         // 3️⃣ Score final
         const finalScore = calculateScore(
@@ -109,7 +115,7 @@ function getCurrentURL() {
  */
 function handleCheckButton() {
     if (currentHostname && currentURL) {
-        performAnalysis(currentURL, currentHostname);
+        performAnalysis(currentURL, currentHostname, needapi = True);
     } else {
         showErrorState('Aucun site à analyser');
     }
