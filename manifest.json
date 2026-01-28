@@ -15,7 +15,7 @@
   ],
 
   "action": {
-    "default_icon": "img/image.png",
+    "default_icon": "img/image_128.png",
     "default_popup": "popup.html"
   },
 
