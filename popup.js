@@ -65,8 +65,6 @@ async function performAnalysis(url, hostname, options = {}) {
             ...securityResults.messages,
             ...(apiResult.messages || [])
           ];
-
-          console.log("Pénalité API =", apiResult);
         }
 
 
