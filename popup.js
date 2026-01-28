@@ -55,9 +55,18 @@ async function performAnalysis(url, hostname, options = {}) {
 
         // Calc via API
         if (useApi) {
-            const apiPenalty = await calculateScoreApi(url);
-            console.log("Pénalité API =", apiPenalty);
-            securityResults.totalPenalty += apiPenalty;
+          const apiResult = await calculateScoreApi(url); // { penalty: -115, messages: [...] }
+    
+          // Ajout du score numérique
+          securityResults.totalPenalty += apiResult.penalty;
+
+          // Ajouter les messages pour l'affichage
+          securityResults.messages = [
+            ...securityResults.messages,
+            ...(apiResult.messages || [])
+          ];
+
+          console.log("Pénalité API =", apiResult);
         }
 
 

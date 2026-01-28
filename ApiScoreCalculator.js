@@ -1,3 +1,9 @@
+//const { main: scanVirusTotal } = require("./API/API_VT.js");
+//const { main: scanCloudflareRadar } = require("./API_CF");
+
+import { scanVirusTotal } from "./API/API_VT.js";
+import { scanCloudflareRadar } from "./API/API_CF.js";
+
 export async function calculateScoreApi(url) {
     let penalty = 0;
     let messages = [];
@@ -18,7 +24,7 @@ export async function calculateScoreApi(url) {
         /* ================= Cloudflare ================= */
         const cf = await scanCloudflareRadar(url);
 
-        if (cf.details?.malicious) penalty -= 30;
+        //if (cf.details?.malicious) penalty -= 30;
         if (cf.details?.phishing) penalty -= 25;
         if (cf.details?.malware) penalty -= 40;
         if (cf.details?.spam) penalty -= 10;
