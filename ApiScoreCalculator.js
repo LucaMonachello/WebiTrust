@@ -7,23 +7,23 @@ export async function calculateScoreApi(url) {
         const vt = await scanVirusTotal(url);
         const [malicious, total] = vt.vtScore.split('/').map(Number);
 
-        if (malicious >= 2 && malicious <= 5) penalty += 10;
-        else if (malicious <= 15) penalty += 25;
-        else if (malicious > 15) penalty += 40;
+        if (malicious >= 2 && malicious <= 5) penalty -= 10;
+        else if (malicious <= 15) penalty -= 25;
+        else if (malicious > 15) penalty -= 40;
 
-        if (vt.reputation < 0 && vt.reputation >= -20) penalty += 10;
-        else if (vt.reputation >= -50) penalty += 20;
-        else if (vt.reputation < -50) penalty += 30;
+        if (vt.reputation < 0 && vt.reputation >= -20) penalty -= 10;
+        else if (vt.reputation >= -50) penalty -= 20;
+        else if (vt.reputation < -50) penalty -= 30;
 
         /* ================= Cloudflare ================= */
         const cf = await scanCloudflareRadar(url);
 
-        if (cf.details?.malicious) penalty += 30;
-        if (cf.details?.phishing) penalty += 25;
-        if (cf.details?.malware) penalty += 40;
-        if (cf.details?.spam) penalty += 10;
-        if (cf.details?.crypto_mining) penalty += 20;
-        if (cf.details?.command_and_control) penalty += 50;
+        if (cf.details?.malicious) penalty -= 30;
+        if (cf.details?.phishing) penalty -= 25;
+        if (cf.details?.malware) penalty -= 40;
+        if (cf.details?.spam) penalty -= 10;
+        if (cf.details?.crypto_mining) penalty -= 20;
+        if (cf.details?.command_and_control) penalty -= 50;
 
         if (malicious >= 2) {
         messages.push({
