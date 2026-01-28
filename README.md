@@ -89,6 +89,13 @@ L’extension privilégie la simplicité d’utilisation tout en s’appuyant su
     L’icône WebiTrust apparaîtra dans ta barre d’outils.
     Clique dessus pour consulter les informations de sécurité d’un site.
 
+🖼️ Screenshots
+
+Voici un aperçu de l’interface de WebiTrust :
+
+<img width="338" height="375" alt="image" src="https://github.com/user-attachments/assets/b49af1af-d617-492e-be13-cab68da6725c" />
+
+
 📈 Feuille de route
 
     Version bêta publique
