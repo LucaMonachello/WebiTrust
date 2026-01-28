@@ -9,36 +9,66 @@
  * @returns {number} Score entier entre 0 et 100
  */
 
-/**
-const { main: scanCloudflareRadar } = require("./API/API_CF");
-const { main: scanVirusTotal } = require("./API/API_VT");
+
+const { main: scanCloudflareRadar } = require("./API/API_CF.js");
+const { main: scanVirusTotal } = require("./API/API_VT.js");
 
 
 export async function calculateScoreApi(url) {
 
     try {
-        const resultF = await scanCloudflareRadar(url);
-        //console.log(JSON.stringify(result, null, 2));
-        
+        // 🔍 Cloudflare Radar
+        const resultCF = await scanCloudflareRadar(url);
+
+        // 🔍 VirusTotal
         const resultVT = await scanVirusTotal(url);
-        //console.log(JSON.stringify(result, null, 2));
-        
-        
 
-        score += 1;
+        /* =======================
+           VIRUSTOTAL
+        ======================= */
+        if (resultVT?.vtScore) {
+            const [detections, total] = resultVT.vtScore
+                .split('/')
+                .map(Number);
 
+            if (total > 0) {
+                const ratio = detections / total;
 
+                // Pénalité proportionnelle
+                const vtPenalty = Math.round(ratio * 100);
+                score -= vtPenalty;
+            }
+        }
 
+        /* =======================
+           CLOUDFLARE RADAR
+        ======================= */
+        if (resultCF?.details?.malicious === true) {
+            score -= 40;
+        }
 
-        // Sécurité : On s'assure que le score reste entre 0 et 100
+        /* =======================
+           AUTRES SIGNAUX CF (OPTIONNEL)
+        ======================= */
+        if (resultCF?.details?.phishing === true) {
+            score -= 20;
+        }
+
+        if (resultCF?.details?.malware === true) {
+            score -= 30;
+        }
+
+        // Clamp final
         return Math.max(0, Math.min(100, Math.round(score)));
 
     } catch (e) {
         console.error("Erreur API :", e.message);
-        process.exit(1);
+
+        // En cas d’erreur API → score neutre dégradé
+        return 50;
     }
 }
-*/
+
 
 
 /** {
