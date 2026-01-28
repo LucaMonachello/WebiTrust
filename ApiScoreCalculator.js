@@ -1,75 +1,45 @@
-/**
- * Module de calcul du score de fiabilité - Version 100 points
- * Gère la logique mathématique et la catégorisation du niveau de risque
- */
-
-/**
- * Calcule le score final sur 100
- * @param {string} url - URL complète du site
- * @returns {number} Score entier entre 0 et 100
- */
-
-
-const { main: scanCloudflareRadar } = require("./API/API_CF.js");
-const { main: scanVirusTotal } = require("./API/API_VT.js");
-
-
 export async function calculateScoreApi(url) {
+    let penalty = 0;
+    let messages = [];
 
     try {
-        // 🔍 Cloudflare Radar
-        const resultCF = await scanCloudflareRadar(url);
+        /* ================= VirusTotal ================= */
+        const vt = await scanVirusTotal(url);
+        const [malicious, total] = vt.vtScore.split('/').map(Number);
 
-        // 🔍 VirusTotal
-        const resultVT = await scanVirusTotal(url);
+        if (malicious >= 2 && malicious <= 5) penalty += 10;
+        else if (malicious <= 15) penalty += 25;
+        else if (malicious > 15) penalty += 40;
 
-        /* =======================
-           VIRUSTOTAL
-        ======================= */
-        if (resultVT?.vtScore) {
-            const [detections, total] = resultVT.vtScore
-                .split('/')
-                .map(Number);
+        if (vt.reputation < 0 && vt.reputation >= -20) penalty += 10;
+        else if (vt.reputation >= -50) penalty += 20;
+        else if (vt.reputation < -50) penalty += 30;
 
-            if (total > 0) {
-                const ratio = detections / total;
+        /* ================= Cloudflare ================= */
+        const cf = await scanCloudflareRadar(url);
 
-                // Pénalité proportionnelle
-                const vtPenalty = Math.round(ratio * 100);
-                score -= vtPenalty;
-            }
+        if (cf.details?.malicious) penalty += 30;
+        if (cf.details?.phishing) penalty += 25;
+        if (cf.details?.malware) penalty += 40;
+        if (cf.details?.spam) penalty += 10;
+        if (cf.details?.crypto_mining) penalty += 20;
+        if (cf.details?.command_and_control) penalty += 50;
+
+        if (malicious >= 2) {
+        messages.push({
+            text: `VirusTotal : ${malicious}/${total} moteurs détectent un risque`,
+            severity: "warning"
+        });
         }
 
-        /* =======================
-           CLOUDFLARE RADAR
-        ======================= */
-        if (resultCF?.details?.malicious === true) {
-            score -= 40;
-        }
 
-        /* =======================
-           AUTRES SIGNAUX CF (OPTIONNEL)
-        ======================= */
-        if (resultCF?.details?.phishing === true) {
-            score -= 20;
-        }
-
-        if (resultCF?.details?.malware === true) {
-            score -= 30;
-        }
-
-        // Clamp final
-        return Math.max(0, Math.min(100, Math.round(score)));
+        return { penalty, messages };
 
     } catch (e) {
-        console.error("Erreur API :", e.message);
-
-        // En cas d’erreur API → score neutre dégradé
-        return 50;
+        console.error("Erreur API scoring :", e);
+        return 0; // fail-safe
     }
 }
-
-
 
 /** {
   "vtScore": "2/97",
