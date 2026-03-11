@@ -25,71 +25,44 @@ let currentURL = null;
  */
 
 async function performAnalysis(url, hostname, options = {}) {
-    const { useApi = false } = options;    
+    const { useApi = false } = options;
     showLoadingState();
 
+    const analysisTimeout = setTimeout(() => {
+        showErrorState('Analyse trop longue, veuillez réessayer');
+    }, 60000);
+
     try {
-        // 0️⃣ Vérification d’accessibilité (DNS / HTTP)
+        // 0️⃣ Accessibilité (non-bloquant — l'utilisateur est déjà sur le site)
         const accessibilityCheck = await checkAccessibility(url);
+        const accessibilityMessages = !accessibilityCheck.isAccessible 
+            ? [{ text: accessibilityCheck.message, severity: accessibilityCheck.severity }] 
+            : [];
 
-        // ❌ Site inaccessible → STOP analyse
-        if (!accessibilityCheck.isAccessible) {
-            displayScore(
-                0,
-                [],
-                [{
-                    text: accessibilityCheck.message,
-                    severity: accessibilityCheck.severity
-                }]
-            );
+        // 1️⃣ Blocklists + Sécurité (en parallèle pour aller plus vite)
+        const [blocklistMatches, securityResults] = await Promise.all([
+            analyzeSite(hostname),
+            analyzeSecurityFeatures(url, hostname)
+        ]);
 
-            console.warn('Analyse stoppée : site inaccessible', accessibilityCheck);
-            return; // ⛔ arrêt total
-        }
-
-        // 1️⃣ Blocklists
-        const blocklistMatches = await analyzeSite(hostname);
-
-        // 2️⃣ Sécurité technique
-        const securityResults = await analyzeSecurityFeatures(url, hostname);
-
-        // Calc via API
+        // 2️⃣ API (seulement si bouton "Vérifier")
         if (useApi) {
-          const apiResult = await calculateScoreApi(url); // { penalty: -115, messages: [...] }
-    
-          // Ajout du score numérique
-          securityResults.totalPenalty += apiResult.penalty;
-
-          // Ajouter les messages pour l'affichage
-          securityResults.messages = [
-            ...securityResults.messages,
-            ...(apiResult.messages || [])
-          ];
+            const apiResult = await calculateScoreApi(url);
+            securityResults.totalPenalty += apiResult.penalty;
+            securityResults.messages = [...securityResults.messages, ...(apiResult.messages || [])];
         }
 
-
-
-        // 3️⃣ Score final
-        const finalScore = calculateScore(
-            blocklistMatches,
-            securityResults.totalPenalty
-        );
-
-        // 4️⃣ Affichage
-        displayScore(finalScore, blocklistMatches, securityResults.messages);
-
-        console.log('Analyse terminée:', {
-            score: finalScore,
-            blocklistMatches: blocklistMatches.length,
-            securityPenalty: securityResults.totalPenalty
-        });
+        // 3️⃣ Score final + affichage
+        const finalScore = calculateScore(blocklistMatches, securityResults.totalPenalty);
+        displayScore(finalScore, blocklistMatches, [...accessibilityMessages, ...securityResults.messages]);
 
     } catch (error) {
         console.error('Erreur analyse:', error);
         showErrorState('Impossible d\'analyser cette page');
+    } finally {
+        clearTimeout(analysisTimeout);
     }
 }
-
 /**
  * Récupère et analyse l'URL de l'onglet actif
  */

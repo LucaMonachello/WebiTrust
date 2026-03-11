@@ -11,81 +11,24 @@
 
 export async function checkAccessibility(url) {
     const urlObj = new URL(url);
-
-    // 1️⃣ Test fetch (rapide mais peu fiable)
-    let fetchFailed = false;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000); // ⏱ timeout global
 
     try {
         const response = await fetch(url, {
             method: 'HEAD',
             mode: 'no-cors',
-            cache: 'no-store'
+            cache: 'no-store',
+            signal: controller.signal // ✅ annulable
         });
-
-        if (!response || response.type === 'opaque') {
-            return {
-                isAccessible: true,
-                status: 'opaque',
-                penaltyScore: 0,
-                message: '✓ Site accessible',
-                severity: 'safe'
-            };
-        }
+        clearTimeout(timeout);
+        return { isAccessible: true, status: 'ok', penaltyScore: 0, message: '✓ Site accessible', severity: 'safe' };
     } catch (e) {
-        fetchFailed = true;
-    }
-
-    // 2️⃣ Test image (DNS réel + TCP)
-    const imageTest = () =>
-        new Promise((resolve, reject) => {
-            const img = new Image();
-            const timeout = setTimeout(() => {
-                reject('timeout');
-            }, 4000);
-
-            img.onload = () => {
-                clearTimeout(timeout);
-                resolve(true);
-            };
-
-            img.onerror = () => {
-                clearTimeout(timeout);
-                reject('error');
-            };
-
-            img.src = `${urlObj.origin}/favicon.ico?_=${Date.now()}`;
-        });
-
-    try {
-        await imageTest();
-
-        return {
-            isAccessible: true,
-            status: 'image_ok',
-            penaltyScore: 0,
-            message: '✓ Site accessible',
-            severity: 'safe'
-        };
-    } catch (error) {
-        // ❗ fetch + image échouent = vrai problème réseau
-        if (fetchFailed) {
-            return {
-                isAccessible: false,
-                status: 'network_error',
-                penaltyScore: -3,
-                message: '✗ Site inaccessible (DNS ou réseau)',
-                severity: 'high'
-            };
+        clearTimeout(timeout);
+        if (e.name === 'AbortError') {
+            return { isAccessible: true, status: 'timeout', penaltyScore: 0, message: '✓ Site accessible', severity: 'safe' };
         }
-
-        // Image bloquée mais site probablement OK
-        return {
-            isAccessible: true,
-            status: 'restricted',
-            penaltyScore: 0,
-            message: '✓ Site accessible (restrictions navigateur)',
-            severity: 'safe'
-        };
+        return { isAccessible: false, status: 'network_error', penaltyScore: -3, message: '✗ Site inaccessible (DNS ou réseau)', severity: 'high' };
     }
 }
 
@@ -154,7 +97,7 @@ export async function checkDomainAge(hostname) {
     }
     
     // Vérifier les TLDs suspects
-    const suspiciousTLDs = ['.tk', '.ml', '.ga', '.cf', '.gq', '.xyz', '.top', '.work', '.click','.cr','.st','.su','.ru'];
+    const suspiciousTLDs = ['.tk', '.ml', '.ga', '.cf', '.gq', '.xyz', '.top', '.work', '.click','.cr','.st','.su','.ru','.cc','.co'];
     const hasSuspiciousTLD = suspiciousTLDs.some(tld => hostname.endsWith(tld));
     
     if (hasSuspiciousTLD) {
@@ -188,70 +131,36 @@ export async function checkDomainAge(hostname) {
 export async function checkSSLCertificate(url) {
     try {
         const urlObj = new URL(url);
-        
-        // Si c'est HTTP, pas de certificat
         if (urlObj.protocol === 'http:') {
-            return {
-                isValid: false,
-                penaltyScore: -15,
-                message: '✗ Aucun certificat SSL',
-                severity: 'high'
-            };
+            return { isValid: false, penaltyScore: -15, message: '✗ Aucun certificat SSL', severity: 'high' };
         }
-        
-        // Tester la connexion SSL avec une image de 1px
-        try {
-            await new Promise((resolve, reject) => {
-                const img = new Image();
-                const timeout = setTimeout(() => {
-                    reject(new Error('timeout'));
-                }, 5000);
-                
-                img.onload = () => {
-                    clearTimeout(timeout);
-                    resolve();
-                };
-                
-                img.onerror = (e) => {
-                    clearTimeout(timeout);
-                    reject(new Error('ssl_error'));
-                };
-                
-                // Ajouter un timestamp pour éviter le cache
-                img.src = `${urlObj.origin}/favicon.ico?_t=${Date.now()}`;
-            });
-            
-            return {
-                isValid: true,
-                penaltyScore: 0,
-                message: '✓ Certificat SSL valide',
-                severity: 'safe'
+
+        return await new Promise((resolve) => {
+            const img = new Image();
+            let settled = false;
+
+            const done = (result) => {
+                if (settled) return;
+                settled = true;
+                clearTimeout(timer);
+                img.onload = null;   // ✅ Nettoyage
+                img.onerror = null;  // ✅ Nettoyage
+                img.src = '';        // ✅ Annule la requête
+                resolve(result);
             };
-        } catch (error) {
-            if (error.message === 'ssl_error') {
-                return {
-                    isValid: false,
-                    penaltyScore: -15,
-                    message: '✗ Certificat SSL invalide ou expiré',
-                    severity: 'high'
-                };
-            }
-            
-            // Timeout - on considère comme OK
-            return {
-                isValid: true,
-                penaltyScore: 0,
-                message: '✓ Certificat SSL présent',
-                severity: 'safe'
-            };
-        }
-    } catch (error) {
-        return {
-            isValid: false,
-            penaltyScore: -15,
-            message: '⚠ Impossible de vérifier le certificat',
-            severity: 'medium'
-        };
+
+            const timer = setTimeout(() => {
+                done({ isValid: true, penaltyScore: 0, message: '✓ Certificat SSL présent', severity: 'safe' });
+            }, 4000);
+
+            img.onload = () => done({ isValid: true, penaltyScore: 0, message: '✓ Certificat SSL valide', severity: 'safe' });
+            img.onerror = () => done({ isValid: false, penaltyScore: -15, message: '✗ Certificat SSL invalide', severity: 'high' });
+
+            img.src = `${urlObj.origin}/favicon.ico?_t=${Date.now()}`;
+        });
+
+    } catch {
+        return { isValid: false, penaltyScore: -15, message: '⚠ Impossible de vérifier le certificat', severity: 'medium' };
     }
 }
 
@@ -317,18 +226,6 @@ export async function analyzeSecurityFeatures(url, hostname) {
         });
     }
     
-    // Vérification du certificat SSL (seulement si HTTPS)
-    if (httpsCheck.isSecure) {
-        const sslCheck = await checkSSLCertificate(url);
-        results.checks.push(sslCheck);
-        results.totalPenalty += sslCheck.penaltyScore;
-        if (sslCheck.message) {
-            results.messages.push({
-                text: sslCheck.message,
-                severity: sslCheck.severity
-            });
-        }
-    }
     
     // Vérification de l'âge du domaine
     const domainAgeCheck = await checkDomainAge(hostname);
