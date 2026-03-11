@@ -155,7 +155,7 @@ async function performAnalysis(url, hostname, options = {}) {
 
     const analysisTimeout = setTimeout(() => {
         showErrorState('Analyse trop longue, veuillez réessayer');
-    }, 60000);
+    }, 30000);
 
     // ✅ Vérification signalement (depuis main)
     const reportedMessages = [];

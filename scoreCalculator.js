@@ -42,45 +42,33 @@ export function calculateScore(matches, securityPenalty = 0) {
 export function getScoreInfo(score, matches, securityMessages = []) {
     let tags = [];
 
-    // On récupère les messages d'erreur techniques
     if (securityMessages) {
         securityMessages.forEach(msg => {
             if (msg.text) tags.push(msg.text);
         });
     }
 
-    // On ajoute les noms des blocklists détectées
     if (matches.length > 0) {
         tags = [...tags, ...matches];
     }
 
-    // Si le score est parfait et aucun tag n'existe, on valorise le site
-    if (tags.length === 0 && score >= 90) {
-        tags = ["✓ Connexion chiffrée", "✓ Aucun risque détecté"];
+    // ✅ Fallback selon le niveau de risque si aucun tag n'est généré
+    if (tags.length === 0) {
+        if (score >= 90) {
+            tags = ["✓ Site sécurisé", "✓ Connexion chiffrée", "✓ Aucun risque détecté"];
+        } else if (score >= 50) {
+            tags = ["⚠ Quelques signaux de vigilance détectés"];
+        } else {
+            tags = ["✗ Site considéré comme risqué"];
+        }
     }
 
-    // Catégorisation pour l'interface
     if (score >= 80) {
-        return {
-            label: "Fiable",
-            desc: "Aucun indicateurs critique indique de danger.",
-            className: "wt-tag-safe", // Utilise tes classes CSS existantes
-            tags: tags
-        };
+        return { label: "Très fiable", desc: "Ce site présente des garanties de sécurité solides.", className: "wt-tag-safe", tags };
     } else if (score >= 50) {
-        return {
-            label: "Prudence",
-            desc: "Quelques points de vigilance détectés sur ce domaine.",
-            className: "wt-tag-warning",
-            tags: tags
-        };
+        return { label: "Prudence", desc: "Quelques points de vigilance détectés sur ce domaine.", className: "wt-tag-warning", tags };
     } else {
-        return {
-            label: "Site Risqué",
-            desc: "Attention, ce site présente des risques élevés de phishing ou de fraude.",
-            className: "wt-tag-risk",
-            tags: tags
-        };
+        return { label: "Site Risqué", desc: "Attention, ce site présente des risques élevés de phishing ou de fraude.", className: "wt-tag-risk", tags };
     }
 }
 
