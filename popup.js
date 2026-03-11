@@ -136,22 +136,34 @@ function handleCheckButton() {
 /**
  * Gestionnaire du bouton "Signaler"
  */
-function handleReportButton() {
-    if (currentHostname) {
-        // Préparer un rapport détaillé
-        const reportInfo = {
-            url: currentURL,
-            hostname: currentHostname,
-            timestamp: new Date().toISOString()
-        };
-        
-        alert(`Fonctionnalité de signalement à implémenter.\n\nSite: ${currentHostname}\nURL: ${currentURL}`);
-        
-        // TODO: Envoyer le rapport à un backend
-        console.log('Rapport à envoyer:', reportInfo);
-    } else {
-        alert('Aucun site à signaler');
-    }
+async function handleReportButton() {
+  if (!currentHostname || !currentURL) {
+    alert('Aucun site à signaler');
+    return;
+  }
+
+  const reportInfo = {
+    url: currentURL,
+    hostname: currentHostname, // déjà normalisé
+    timestamp: new Date().toISOString()
+  };
+
+  try {
+    await saveReport(reportInfo);
+
+    // AJOUT : debug => relire juste après pour confirmer que Firefox a bien écrit
+    const verify = await getReport(currentHostname);
+    console.log("[REPORT] verify after save =", verify);
+
+    alert(`Site signalé.\n\nSite: ${currentHostname}\nURL: ${currentURL}`);
+
+    // Relance l'analyse pour afficher l’alerte immédiatement
+    await performAnalysis(currentURL, currentHostname);
+
+  } catch (e) {
+    console.error("Erreur signalement (storage):", e);
+    alert("Erreur: impossible d'enregistrer le signalement (voir console).");
+  }
 }
 
 /**
