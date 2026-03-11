@@ -26,6 +26,53 @@
   transition: all 0.35s ease-in-out;
 }
 
+.wt-messages{
+    margin-top:10px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+}
+
+.wt-message{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:12px;
+}
+
+.wt-remove-report {
+    flex: 1;
+    border-radius: 999px; /* même arrondi que les autres boutons */
+    font-size: 12px;
+    padding: 8px 10px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    font-weight: 500;
+
+    /* Style identique aux autres boutons */
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 64, 175, 0.6));
+    color: #f9fafb;
+    box-shadow: 0 10px 30px rgba(79, 70, 229, 0.4);
+    transition: all 0.35s ease-in-out;
+}
+
+.wt-remove-report:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 32px rgba(79, 70, 229, 0.6);
+}
+
+.wt-remove-report:active {
+    transform: translateY(0);
+    box-shadow: 0 6px 18px rgba(79, 70, 229, 0.4);
+}
+
+/* Mode clair (facultatif si tu gères les thèmes) */
+body.light-theme .wt-remove-report {
+    background: linear-gradient(135deg, #3b82f6, #6366f1);
+    color: #ffffff;
+    border-color: transparent;
+}
+
 /* --- EXCEPTION : LE CERCLE DOIT ÊTRE INSTANTANÉ --- */
 .wt-score-ring,
 .wt-score-ring::before {

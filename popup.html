@@ -5,26 +5,32 @@
   <title>WebiTrust</title>
   <link rel="stylesheet" href="popup.css">
 </head>
+
 <body>
   <div class="wt-container">
+
     <header class="wt-header">
       <div class="wt-logo-circle">W</div>
+
       <div>
         <h1 class="wt-title">WebiTrust</h1>
         <p class="wt-subtitle">Analyse de fiabilité</p>
       </div>
+
       <div class="theme-switch-wrapper">
         <label class="theme-switch" for="checkbox">
             <input type="checkbox" id="checkbox" />
             <div class="slider">
-            <span>🌙</span>
-            <span>☀️</span>
+              <span>🌙</span>
+              <span>☀️</span>
             </div>
         </label>
       </div>
     </header>
 
+
     <section class="wt-main">
+
       <div class="wt-url">
         <span class="wt-url-label">URL actuellement analysée</span>
         <span id="wt-current-url" class="wt-url-value">Chargement...</span>
@@ -35,6 +41,7 @@
           <span id="wt-score-value">--</span>
           <span class="wt-score-unit">/100</span>
         </div>
+
         <div class="wt-score-info">
             <p class="wt-score-label" id="wt-score-label">Analyse en cours</p>
             <p class="wt-score-desc" id="wt-score-desc">Patientez quelques secondes...</p>
@@ -42,9 +49,14 @@
       </div>
 
       <div class="wt-tags" id="wt-tags-container">
-            <span class="wt-tag wt-tag-warning">Analyse en cours</span>
-        </div>
+        <span class="wt-tag wt-tag-warning">Analyse en cours</span>
+      </div>
+
+      <!-- AJOUT : messages sécurité -->
+      <div id="wt-messages" class="wt-messages"></div>
+
     </section>
+
 
     <footer class="wt-footer">
         <button class="wt-btn-primary" id="wt-btn-check">Analyse poussée</button>
@@ -54,9 +66,10 @@
     <p class="wt-disclaimer">
       WebiTrust © 2026 - Analyse de fiabilité des sites web
     </p>
+
   </div>
 
-  <!-- Tu chargeras ici ton fichier popup.js pour appeler l’API -->
-    <script type="module" src="popup.js"></script>
+  <script type="module" src="popup.js"></script>
+
 </body>
 </html>

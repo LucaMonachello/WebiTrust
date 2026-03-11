@@ -168,7 +168,8 @@ async function performAnalysis(url, hostname, options = {}) {
                 : "date inconnue";
             reportedMessages.push({
                 text: `⚠️ Ce site a déjà été signalé (${when}).`,
-                severity: "warning"
+                severity: "warning",
+                removable: true
             });
         }
     } catch (e) {
@@ -335,6 +336,15 @@ function init() {
         }
     }
 }
+
+window.addEventListener("removeReportRequest", async () => {
+
+    await removeReport(currentHostname)
+
+    await performAnalysis(currentURL, currentHostname)
+
+})
+
 
 // Initialiser au chargement du DOM
 document.addEventListener('DOMContentLoaded', init);
