@@ -17,7 +17,7 @@ export async function calculateScoreApi(url) {
         else if (malicious <= 15) penalty -= 25;
         else if (malicious > 15) penalty -= 40;
 
-        else if (vt.reputation < 0 && vt.reputation >= -20) penalty -= 10;
+        if (vt.reputation < 0 && vt.reputation >= -20) penalty -= 10;
         else if (vt.reputation >= -50) penalty -= 20;
         else if (vt.reputation < -50) penalty -= 30;
 
