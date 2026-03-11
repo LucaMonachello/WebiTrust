@@ -39,20 +39,10 @@ const api = hasBrowser ? globalThis.browser : globalThis.chrome;
  * (majuscules, point final, espaces, etc.).
  */
 function normalizeHostname(hostname) {
-
-
   return String(hostname || "")
-
-
     .trim()
-
-
     .toLowerCase()
-
-
     .replace(/\.+$/, ""); // enlève les "." finaux éventuels
-
-
 }
 
 /**
@@ -63,38 +53,17 @@ const REPORTS_KEY = "reports";
  * AJOUT : storageGet compatible Firefox (Promise) + Chrome (callback).
  */
 async function storageGet(key) {
-
-
   if (!api?.storage?.local) return {};
-
-
   if (hasBrowser) {
-
-
     return await api.storage.local.get(key);
-
-
   }
 
-
   return await new Promise((resolve, reject) => {
-
-
     api.storage.local.get(key, (res) => {
-
-
       const err = api.runtime?.lastError;
-
-
       if (err) reject(err);
-
-
       else resolve(res);
-
-
     });
-
-
   });
 
 
@@ -104,44 +73,19 @@ async function storageGet(key) {
  * AJOUT : storageSet compatible Firefox (Promise) + Chrome (callback).
  */
 async function storageSet(obj) {
-
-
   if (!api?.storage?.local) return;
-
-
   if (hasBrowser) {
-
-
     await api.storage.local.set(obj);
-
-
     return;
-
-
   }
 
-
   await new Promise((resolve, reject) => {
-
-
     api.storage.local.set(obj, () => {
-
-
       const err = api.runtime?.lastError;
-
-
       if (err) reject(err);
-
-
       else resolve();
-
-
     });
-
-
   });
-
-
 }
 
 
@@ -150,117 +94,53 @@ async function storageSet(obj) {
  * Format: { "example.com": { url, hostname, timestamp }, ... }
  */
 async function getReportsMap() {
-
-
   const data = await storageGet(REPORTS_KEY);
-
-
   return data?.[REPORTS_KEY] || {};
-
-
 }
-
-
-
-
 
 /**
  * AJOUT : récupérer un signalement (ou null).
  */
 async function getReport(hostname) {
-
-
   const key = normalizeHostname(hostname);
-
-
   const reports = await getReportsMap();
-
-
   return reports[key] || null;
-
-
 }
+
 
 /**
  * AJOUT : enregistrer / mettre à jour un signalement.
  */
 async function saveReport(reportInfo) {
-
-
   const reports = await getReportsMap();
-
-
   const key = normalizeHostname(reportInfo.hostname);
-
-
   reports[key] = reportInfo;
-
-
   await storageSet({ [REPORTS_KEY]: reports });
-
-
 }
 
 /**
  * AJOUT (optionnel) : supprimer un signalement.
  */
 async function removeReport(hostname) {
-
-
   const reports = await getReportsMap();
-
-
   const key = normalizeHostname(hostname);
-
-
   delete reports[key];
-
-
   await storageSet({ [REPORTS_KEY]: reports });
-
-
 }
 /**
  * AJOUT : récupérer l'onglet actif (Firefox Promise / Chrome callback).
  */
 async function getActiveTab() {
-
-
   if (!api?.tabs?.query) return null;
-
-
-
-
-
   if (hasBrowser) {
-
-
     const tabs = await api.tabs.query({ active: true, currentWindow: true });
-
-
     return tabs?.[0] || null;
-
-
   }
-
-
-
-
-
   return await new Promise((resolve) => {
-
-
     api.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-
-
       resolve(tabs?.[0] || null);
-
-
     });
-
-
   });
-
 
 }
 /**
@@ -273,175 +153,47 @@ async function performAnalysis(url, hostname, options = {}) {
     const { useApi = false } = options;    
     showLoadingState();
 
-<<<<<<< HEAD
-    try {
-        // 0️⃣ Vérification d’accessibilité (DNS / HTTP)
-        const accessibilityCheck = await checkAccessibility(url);
-
-        // ❌ Site inaccessible → STOP analyse
-        if (!accessibilityCheck.isAccessible) {
-            displayScore(
-                0,
-                [],
-                [{
-                    text: accessibilityCheck.message,
-                    severity: accessibilityCheck.severity
-                }]
-            );
-
-            console.warn('Analyse stoppée : site inaccessible', accessibilityCheck);
-            return; // ⛔ arrêt total
-        }
-
-        // 1️⃣ Blocklists
-        const blocklistMatches = await analyzeSite(hostname);
-
-        // 2️⃣ Sécurité technique
-        const securityResults = await analyzeSecurityFeatures(url, hostname);
-        console.log("Penalties detail:", securityResults.checks.map(c => c.penaltyScore));
-
-        // Calc via API
-        if (useApi) {
-          const apiResult = await calculateScoreApi(url); // { penalty: -115, messages: [...] }
-          console.log("API penalty:", apiResult.penalty);
-          console.log("API messages:", apiResult.messages);
-          // Ajout du score numérique
-          securityResults.totalPenalty += apiResult.penalty;
-
-          // Ajouter les messages pour l'affichage
-          securityResults.messages = [
-            ...securityResults.messages,
-            ...(apiResult.messages || [])
-          ];
-        }
-=======
->>>>>>> 6aac3a4eee02f4ec2a7b9faeb1ddf2d941d331ae
-
-
-
 
   // AJOUT : message d’alerte si déjà signalé
 
 
   const reportedMessages = [];
-
-
   try {
-
-
     const existingReport = await getReport(hostname);
-
-
-
-
-
     // AJOUT : debug utile pour Firefox (à lire dans la console popup)
-
-
     console.log("[REPORT] existingReport =", existingReport);
-
-
-
-
-
     if (existingReport) {
-
-
       const when = existingReport.timestamp
-
-
         ? new Date(existingReport.timestamp).toLocaleString()
-
-
         : "date inconnue";
-
-
-
-
-
       reportedMessages.push({
-
-
         text: `⚠️ Ce site a déjà été signalé (${when}).`,
-
-
         severity: "warning"
-
-
       });
-
-
     }
 
-
   } catch (e) {
-
-
     console.warn("Lecture storage (signalements) impossible:", e);
-
-
   }
 
-
-
-
-
   try {
-
-
     // 0️⃣ Vérification d’accessibilité (DNS / HTTP)
-
-
     const accessibilityCheck = await checkAccessibility(url);
-
-
-
-
-
     // ❌ Site inaccessible → STOP analyse
-
-
     if (!accessibilityCheck.isAccessible) {
-
-
       displayScore(
-
-
         0,
-
-
         [],
-
-
         [
-
-
           ...reportedMessages,
-
-
           {
-
-
             text: accessibilityCheck.message,
-
-
             severity: accessibilityCheck.severity
-
-
           }
-
-
         ]
-
-
       );
-
-
       console.warn('Analyse stoppée : site inaccessible', accessibilityCheck);
-
-
       return;
-
     }
 
 
@@ -449,89 +201,32 @@ async function performAnalysis(url, hostname, options = {}) {
 
 
     // 1️⃣ Blocklists
-
-
     const blocklistMatches = await analyzeSite(hostname);
-
-
-
-
-
     // 2️⃣ Sécurité technique
-
-
     const securityResults = await analyzeSecurityFeatures(url, hostname);
-
-
-
-
-
     // 3️⃣ Score final
-
-
     const finalScore = calculateScore(
-
-
       blocklistMatches,
-
-
       securityResults.totalPenalty
-
-
     );
-
-
-
-
 
     // 4️⃣ Affichage
-
-
     displayScore(
-
-
       finalScore,
-
-
       blocklistMatches,
-
-
       [...reportedMessages, ...securityResults.messages]
-
-
     );
-
-
-
 
 
     console.log('Analyse terminée:', {
-
-
       score: finalScore,
-
-
       blocklistMatches: blocklistMatches.length,
-
-
       securityPenalty: securityResults.totalPenalty
-
-
     });
 
-
-
-
-
   } catch (error) {
-
-
     console.error('Erreur analyse:', error);
-
-
     showErrorState('Impossible d\'analyser cette page');
-
-
   }
 
 }
@@ -601,7 +296,6 @@ async function handleReportButton() {
     const verify = await getReport(currentHostname);
     console.log("[REPORT] verify after save =", verify);
 
-    alert(`Site signalé.\n\nSite: ${currentHostname}\nURL: ${currentURL}`);
 
     // Relance l'analyse pour afficher l’alerte immédiatement
     await performAnalysis(currentURL, currentHostname);
