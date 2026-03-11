@@ -14,7 +14,7 @@ export async function calculateScoreApi(url) {
             scanVirusTotal(url),
             scanCloudflareRadar(url)
         ]);
-
+        
         /* VirusTotal */
         const [malicious, total] = vt.vtScore.split('/').map(Number);
 
