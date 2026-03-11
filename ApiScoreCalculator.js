@@ -18,14 +18,17 @@ export async function calculateScoreApi(url) {
         /* VirusTotal */
         const [malicious, total] = vt.vtScore.split('/').map(Number);
 
-        if (malicious >= 2 && malicious <= 5) penalty -= 10;
-        else if (malicious <= 15) penalty -= 25;
-        else if (malicious > 15) penalty -= 40;
+        // Pénalité malicious (seulement si >= 2 détections)
+        if      (malicious >= 2 && malicious <= 5)  penalty -= 10;
+        else if (malicious > 5  && malicious <= 15) penalty -= 25;
+        else if (malicious > 15)                    penalty -= 40;
 
-        // ✅ Bloc reputation séparé (bug corrigé)
-        if (vt.reputation < 0 && vt.reputation >= -20) penalty -= 10;
-        else if (vt.reputation < -20 && vt.reputation >= -50) penalty -= 20;
-        else if (vt.reputation < -50) penalty -= 30;
+        // Pénalité réputation (seulement si 0 ou 1 détection)
+        if (malicious <= 1) {
+            if      (vt.reputation < -50)                          penalty -= 30;
+            else if (vt.reputation < -20 && vt.reputation >= -50)  penalty -= 20;
+            else if (vt.reputation < 0   && vt.reputation >= -20)  penalty -= 10;
+        }
 
         if (malicious >= 2) {
             messages.push({
