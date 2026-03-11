@@ -56,7 +56,7 @@ export function getScoreInfo(score, matches, securityMessages = []) {
 
     // Si le score est parfait et aucun tag n'existe, on valorise le site
     if (tags.length === 0 && score >= 90) {
-        tags = ["✓ Site sécurisé", "✓ Connexion chiffrée", "✓ Aucun risque détecté"];
+        tags = ["✓ Connexion chiffrée", "✓ Aucune menace détectée"];
     }
 
     // Catégorisation pour l'interface
