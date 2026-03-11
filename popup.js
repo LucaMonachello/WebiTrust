@@ -150,87 +150,72 @@ async function getActiveTab() {
  */
 
 async function performAnalysis(url, hostname, options = {}) {
-    const { useApi = false } = options;    
+    const { useApi = false } = options;
     showLoadingState();
 
+    const analysisTimeout = setTimeout(() => {
+        showErrorState('Analyse trop longue, veuillez réessayer');
+    }, 60000);
 
-  // AJOUT : message d’alerte si déjà signalé
-
-
-  const reportedMessages = [];
-  try {
-    const existingReport = await getReport(hostname);
-    // AJOUT : debug utile pour Firefox (à lire dans la console popup)
-    console.log("[REPORT] existingReport =", existingReport);
-    if (existingReport) {
-      const when = existingReport.timestamp
-        ? new Date(existingReport.timestamp).toLocaleString()
-        : "date inconnue";
-      reportedMessages.push({
-        text: `⚠️ Ce site a déjà été signalé (${when}).`,
-        severity: "warning"
-      });
+    // ✅ Vérification signalement (depuis main)
+    const reportedMessages = [];
+    try {
+        const existingReport = await getReport(hostname);
+        console.log("[REPORT] existingReport =", existingReport);
+        if (existingReport) {
+            const when = existingReport.timestamp
+                ? new Date(existingReport.timestamp).toLocaleString()
+                : "date inconnue";
+            reportedMessages.push({
+                text: `⚠️ Ce site a déjà été signalé (${when}).`,
+                severity: "warning"
+            });
+        }
+    } catch (e) {
+        console.warn("Lecture storage (signalements) impossible:", e);
     }
 
-  } catch (e) {
-    console.warn("Lecture storage (signalements) impossible:", e);
-  }
+    try {
+        // 0️⃣ Accessibilité (non-bloquant — l'utilisateur est déjà sur le site)
+        const accessibilityCheck = await checkAccessibility(url);
+        const accessibilityMessages = !accessibilityCheck.isAccessible
+            ? [{ text: accessibilityCheck.message, severity: accessibilityCheck.severity }]
+            : [];
 
-  try {
-    // 0️⃣ Vérification d’accessibilité (DNS / HTTP)
-    const accessibilityCheck = await checkAccessibility(url);
-    // ❌ Site inaccessible → STOP analyse
-    if (!accessibilityCheck.isAccessible) {
-      displayScore(
-        0,
-        [],
-        [
-          ...reportedMessages,
-          {
-            text: accessibilityCheck.message,
-            severity: accessibilityCheck.severity
-          }
-        ]
-      );
-      console.warn('Analyse stoppée : site inaccessible', accessibilityCheck);
-      return;
+        // 1️⃣ Blocklists + Sécurité (en parallèle)
+        const [blocklistMatches, securityResults] = await Promise.all([
+            analyzeSite(hostname),
+            analyzeSecurityFeatures(url, hostname)
+        ]);
+
+        // 2️⃣ API (seulement si bouton "Vérifier")
+        if (useApi) {
+            const apiResult = await calculateScoreApi(url);
+            securityResults.totalPenalty += apiResult.penalty;
+            securityResults.messages = [...securityResults.messages, ...(apiResult.messages || [])];
+        }
+
+        // 3️⃣ Score final + affichage
+        const finalScore = calculateScore(blocklistMatches, securityResults.totalPenalty);
+        displayScore(finalScore, blocklistMatches, [
+            ...reportedMessages,
+            ...accessibilityMessages,
+            ...securityResults.messages
+        ]);
+
+        console.log('Analyse terminée:', {
+            score: finalScore,
+            blocklistMatches: blocklistMatches.length,
+            securityPenalty: securityResults.totalPenalty
+        });
+
+    } catch (error) {
+        console.error('Erreur analyse:', error);
+        showErrorState('Impossible d\'analyser cette page');
+    } finally {
+        clearTimeout(analysisTimeout);
     }
-
-
-
-
-
-    // 1️⃣ Blocklists
-    const blocklistMatches = await analyzeSite(hostname);
-    // 2️⃣ Sécurité technique
-    const securityResults = await analyzeSecurityFeatures(url, hostname);
-    // 3️⃣ Score final
-    const finalScore = calculateScore(
-      blocklistMatches,
-      securityResults.totalPenalty
-    );
-
-    // 4️⃣ Affichage
-    displayScore(
-      finalScore,
-      blocklistMatches,
-      [...reportedMessages, ...securityResults.messages]
-    );
-
-
-    console.log('Analyse terminée:', {
-      score: finalScore,
-      blocklistMatches: blocklistMatches.length,
-      securityPenalty: securityResults.totalPenalty
-    });
-
-  } catch (error) {
-    console.error('Erreur analyse:', error);
-    showErrorState('Impossible d\'analyser cette page');
-  }
-
 }
-
 /**
  * Récupère et analyse l'URL de l'onglet actif
  */

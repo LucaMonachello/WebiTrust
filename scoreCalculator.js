@@ -15,11 +15,11 @@ export function calculateScore(matches, securityPenalty = 0) {
     // 1. Pénalités pour les listes noires (Blocklists)
     // On considère qu'une détection est critique
     if (matches.length === 1) {
-        score -= 50; // Chute directe à 50 (Orange)
+        score -= 25; // Chute directe à 50 (Orange)
     } else if (matches.length === 2) {
-        score -= 80; // Chute à 20 (Rouge)
+        score -= 50; // Chute à 20 (Rouge)
     } else if (matches.length >= 3) {
-        score -= 100; // Danger immédiat (0)
+        score -= 80; // Danger immédiat (0)
     }
 
     // 2. Pénalités techniques (HTTPS, SSL, etc.)
@@ -56,14 +56,14 @@ export function getScoreInfo(score, matches, securityMessages = []) {
 
     // Si le score est parfait et aucun tag n'existe, on valorise le site
     if (tags.length === 0 && score >= 90) {
-        tags = ["✓ Connexion chiffrée", "✓ Aucune menace détectée"];
+        tags = ["✓ Connexion chiffrée", "✓ Aucun risque détecté"];
     }
 
     // Catégorisation pour l'interface
     if (score >= 80) {
         return {
-            label: "Très fiable",
-            desc: "Ce site présente des garanties de sécurité solides.",
+            label: "Fiable",
+            desc: "Aucun indicateurs critique indique de danger.",
             className: "wt-tag-safe", // Utilise tes classes CSS existantes
             tags: tags
         };
