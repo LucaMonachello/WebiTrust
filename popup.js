@@ -18,6 +18,131 @@ import {
 let currentHostname = null;
 let currentURL = null;
 
+/* =========================================================
+
+
+   AJOUT : couche API cross-browser + storage signalements
+
+
+   ========================================================= */
+
+/**
+ * AJOUT : Firefox expose `browser` (Promise-based), Chrome expose `chrome`.
+ * On choisit automatiquement l'API dispo.
+ */
+const hasBrowser = typeof globalThis.browser !== "undefined";
+
+
+const api = hasBrowser ? globalThis.browser : globalThis.chrome;
+/**
+ * AJOUT : normalisation du hostname pour éviter les mismatches
+ * (majuscules, point final, espaces, etc.).
+ */
+function normalizeHostname(hostname) {
+  return String(hostname || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\.+$/, ""); // enlève les "." finaux éventuels
+}
+
+/**
+ * AJOUT : clé unique dans storage.local pour stocker les signalements.
+ */
+const REPORTS_KEY = "reports";
+/**
+ * AJOUT : storageGet compatible Firefox (Promise) + Chrome (callback).
+ */
+async function storageGet(key) {
+  if (!api?.storage?.local) return {};
+  if (hasBrowser) {
+    return await api.storage.local.get(key);
+  }
+
+  return await new Promise((resolve, reject) => {
+    api.storage.local.get(key, (res) => {
+      const err = api.runtime?.lastError;
+      if (err) reject(err);
+      else resolve(res);
+    });
+  });
+
+
+}
+
+/**
+ * AJOUT : storageSet compatible Firefox (Promise) + Chrome (callback).
+ */
+async function storageSet(obj) {
+  if (!api?.storage?.local) return;
+  if (hasBrowser) {
+    await api.storage.local.set(obj);
+    return;
+  }
+
+  await new Promise((resolve, reject) => {
+    api.storage.local.set(obj, () => {
+      const err = api.runtime?.lastError;
+      if (err) reject(err);
+      else resolve();
+    });
+  });
+}
+
+
+/**
+ * AJOUT : récupérer la map complète des signalements.
+ * Format: { "example.com": { url, hostname, timestamp }, ... }
+ */
+async function getReportsMap() {
+  const data = await storageGet(REPORTS_KEY);
+  return data?.[REPORTS_KEY] || {};
+}
+
+/**
+ * AJOUT : récupérer un signalement (ou null).
+ */
+async function getReport(hostname) {
+  const key = normalizeHostname(hostname);
+  const reports = await getReportsMap();
+  return reports[key] || null;
+}
+
+
+/**
+ * AJOUT : enregistrer / mettre à jour un signalement.
+ */
+async function saveReport(reportInfo) {
+  const reports = await getReportsMap();
+  const key = normalizeHostname(reportInfo.hostname);
+  reports[key] = reportInfo;
+  await storageSet({ [REPORTS_KEY]: reports });
+}
+
+/**
+ * AJOUT (optionnel) : supprimer un signalement.
+ */
+async function removeReport(hostname) {
+  const reports = await getReportsMap();
+  const key = normalizeHostname(hostname);
+  delete reports[key];
+  await storageSet({ [REPORTS_KEY]: reports });
+}
+/**
+ * AJOUT : récupérer l'onglet actif (Firefox Promise / Chrome callback).
+ */
+async function getActiveTab() {
+  if (!api?.tabs?.query) return null;
+  if (hasBrowser) {
+    const tabs = await api.tabs.query({ active: true, currentWindow: true });
+    return tabs?.[0] || null;
+  }
+  return await new Promise((resolve) => {
+    api.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      resolve(tabs?.[0] || null);
+    });
+  });
+
+}
 /**
  * Effectue l'analyse complète d'un site
  * @param {string} url - URL complète du site
@@ -32,14 +157,32 @@ async function performAnalysis(url, hostname, options = {}) {
         showErrorState('Analyse trop longue, veuillez réessayer');
     }, 60000);
 
+    // ✅ Vérification signalement (depuis main)
+    const reportedMessages = [];
+    try {
+        const existingReport = await getReport(hostname);
+        console.log("[REPORT] existingReport =", existingReport);
+        if (existingReport) {
+            const when = existingReport.timestamp
+                ? new Date(existingReport.timestamp).toLocaleString()
+                : "date inconnue";
+            reportedMessages.push({
+                text: `⚠️ Ce site a déjà été signalé (${when}).`,
+                severity: "warning"
+            });
+        }
+    } catch (e) {
+        console.warn("Lecture storage (signalements) impossible:", e);
+    }
+
     try {
         // 0️⃣ Accessibilité (non-bloquant — l'utilisateur est déjà sur le site)
         const accessibilityCheck = await checkAccessibility(url);
-        const accessibilityMessages = !accessibilityCheck.isAccessible 
-            ? [{ text: accessibilityCheck.message, severity: accessibilityCheck.severity }] 
+        const accessibilityMessages = !accessibilityCheck.isAccessible
+            ? [{ text: accessibilityCheck.message, severity: accessibilityCheck.severity }]
             : [];
 
-        // 1️⃣ Blocklists + Sécurité (en parallèle pour aller plus vite)
+        // 1️⃣ Blocklists + Sécurité (en parallèle)
         const [blocklistMatches, securityResults] = await Promise.all([
             analyzeSite(hostname),
             analyzeSecurityFeatures(url, hostname)
@@ -54,7 +197,17 @@ async function performAnalysis(url, hostname, options = {}) {
 
         // 3️⃣ Score final + affichage
         const finalScore = calculateScore(blocklistMatches, securityResults.totalPenalty);
-        displayScore(finalScore, blocklistMatches, [...accessibilityMessages, ...securityResults.messages]);
+        displayScore(finalScore, blocklistMatches, [
+            ...reportedMessages,
+            ...accessibilityMessages,
+            ...securityResults.messages
+        ]);
+
+        console.log('Analyse terminée:', {
+            score: finalScore,
+            blocklistMatches: blocklistMatches.length,
+            securityPenalty: securityResults.totalPenalty
+        });
 
     } catch (error) {
         console.error('Erreur analyse:', error);
@@ -109,22 +262,33 @@ function handleCheckButton() {
 /**
  * Gestionnaire du bouton "Signaler"
  */
-function handleReportButton() {
-    if (currentHostname) {
-        // Préparer un rapport détaillé
-        const reportInfo = {
-            url: currentURL,
-            hostname: currentHostname,
-            timestamp: new Date().toISOString()
-        };
-        
-        alert(`Fonctionnalité de signalement à implémenter.\n\nSite: ${currentHostname}\nURL: ${currentURL}`);
-        
-        // TODO: Envoyer le rapport à un backend
-        console.log('Rapport à envoyer:', reportInfo);
-    } else {
-        alert('Aucun site à signaler');
-    }
+async function handleReportButton() {
+  if (!currentHostname || !currentURL) {
+    alert('Aucun site à signaler');
+    return;
+  }
+
+  const reportInfo = {
+    url: currentURL,
+    hostname: currentHostname, // déjà normalisé
+    timestamp: new Date().toISOString()
+  };
+
+  try {
+    await saveReport(reportInfo);
+
+    // AJOUT : debug => relire juste après pour confirmer que Firefox a bien écrit
+    const verify = await getReport(currentHostname);
+    console.log("[REPORT] verify after save =", verify);
+
+
+    // Relance l'analyse pour afficher l’alerte immédiatement
+    await performAnalysis(currentURL, currentHostname);
+
+  } catch (e) {
+    console.error("Erreur signalement (storage):", e);
+    alert("Erreur: impossible d'enregistrer le signalement (voir console).");
+  }
 }
 
 /**
