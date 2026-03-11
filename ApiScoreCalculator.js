@@ -48,18 +48,31 @@ export async function calculateScoreApi(url) {
         for (const type of ["phishing", "malware", "spam", "crypto_mining", "command_and_control"]) {
             if (cf.details?.[type]) detectedTypes.push(type);
         }
+
         if (detectedTypes.length > 0) {
             messages.push({
-                text: `Cloudflare Radar : ${detectedTypes.join(", ")} détecté(s)`,
+                text: `✗ Cloudflare Radar : ${detectedTypes.join(", ")} détecté(s)`,
+                severity: "high"
+            });
+        } else if (cf.details?.malicious) {
+            // ✅ Cloudflare signale malicious sans catégorie précise
+            penalty -= 30;
+            messages.push({
+                text: "✗ Cloudflare Radar : site signalé comme malveillant",
                 severity: "high"
             });
         }
-
         return { penalty, messages };
 
     } catch (e) {
         console.error("Erreur API scoring :", e);
-        return { penalty: 0, messages: [] }; // ✅ Format correct au lieu de return 0
+        return {
+            penalty: 0,
+            messages: [{
+                text: "⚠ Vérification API indisponible (VirusTotal / Cloudflare)",
+                severity: "warning"
+            }]
+        };
     }
     console.log("Penalty after CF:", penalty);
 
