@@ -52,11 +52,13 @@ async function performAnalysis(url, hostname, options = {}) {
 
         // 2️⃣ Sécurité technique
         const securityResults = await analyzeSecurityFeatures(url, hostname);
+        console.log("Penalties detail:", securityResults.checks.map(c => c.penaltyScore));
 
         // Calc via API
         if (useApi) {
           const apiResult = await calculateScoreApi(url); // { penalty: -115, messages: [...] }
-    
+          console.log("API penalty:", apiResult.penalty);
+          console.log("API messages:", apiResult.messages);
           // Ajout du score numérique
           securityResults.totalPenalty += apiResult.penalty;
 

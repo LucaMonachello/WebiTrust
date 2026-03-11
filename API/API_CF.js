@@ -23,7 +23,7 @@ async function createScan(url) {
 }
 
 async function getScanResult(scanId) {
-  while (true) {
+  while (true) {  
     const res = await fetch(`${BASE_URL}/result/${scanId}`, {
       headers: { Authorization: `Bearer ${CF_API_TOKEN}` },
     });

@@ -13,13 +13,20 @@ export async function calculateScoreApi(url) {
         const vt = await scanVirusTotal(url);
         const [malicious, total] = vt.vtScore.split('/').map(Number);
 
-        if (malicious >= 2 && malicious <= 5) penalty -= 10;
-        else if (malicious <= 15) penalty -= 25;
-        else if (malicious > 15) penalty -= 40;
+        console.log("VT raw:", vt);
+        console.log("malicious:", malicious, "reputation:", vt.reputation);
 
-        if (vt.reputation < 0 && vt.reputation >= -20) penalty -= 10;
-        else if (vt.reputation >= -50) penalty -= 20;
-        else if (vt.reputation < -50) penalty -= 30;
+        // Pénalité malicious (seulement si >= 2 détections)
+        if      (malicious >= 2 && malicious <= 5)  penalty -= 10;
+        else if (malicious > 5  && malicious <= 15) penalty -= 25;
+        else if (malicious > 15)                    penalty -= 40;
+
+        // Pénalité réputation (seulement si 0 ou 1 détection)
+        if (malicious <= 1) {
+            if      (vt.reputation < -50)                          penalty -= 30;
+            else if (vt.reputation < -20 && vt.reputation >= -50)  penalty -= 20;
+            else if (vt.reputation < 0   && vt.reputation >= -20)  penalty -= 10;
+        }
 
         if (malicious >= 2) {
         messages.push({
@@ -28,8 +35,12 @@ export async function calculateScoreApi(url) {
         });
         }
 
+        console.log("Penalty after VT:", penalty);
+
         /* ================= Cloudflare ================= */
         const cf = await scanCloudflareRadar(url);
+
+        console.log("CF raw:", cf);
 
         if (cf.details?.phishing) penalty -= 25;
         if (cf.details?.malware) penalty -= 40;
@@ -56,4 +67,6 @@ export async function calculateScoreApi(url) {
         console.error("Erreur API scoring :", e);
         return 0; // fail-safe
     }
+    console.log("Penalty after CF:", penalty);
+
 }
