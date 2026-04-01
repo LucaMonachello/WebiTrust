@@ -1,9 +1,4 @@
 /**
- * Module de gestion des blocklists
- * Gère le chargement et la vérification des domaines dans les listes de blocage
- */
-
-/**
  * Charge une liste de blocage depuis un fichier
  * @param {string} filename - Nom du fichier à charger
  * @returns {Promise<string[]>} Liste des domaines bloqués
@@ -13,22 +8,19 @@ export async function loadBlocklist(filename) {
         const response = await fetch(`blocklist/${filename}`);
         const text = await response.text();
         
-        // Retourner un tableau de domaines (une ligne par domaine)
         const domains = text.split('\n')
         .map(line => line.trim())
         .filter(line => {
             if (!line || line.startsWith('#')) return false;
-            return true; // ✅ Accepte toutes les lignes non vides et non commentées
+            return true;
         })
         .map(line => {
-            // Format "0.0.0.0 domaine" ou "127.0.0.1 domaine"
             if (line.startsWith('0.0.0.0 ')) return line.substring(8).trim();
             if (line.startsWith('127.0.0.1 ')) return line.substring(10).trim();
-            // Format brut "domaine.com" → on ignore les lignes avec espaces (entrées invalides)
             if (line.includes(' ')) return null;
-            return line.trim(); // ✅ Domaine brut
+            return line.trim();
         })
-        .filter(Boolean); // Supprime les null
+        .filter(Boolean);
             
             return domains;
         } catch (error) {
@@ -44,12 +36,10 @@ export async function loadBlocklist(filename) {
  * @returns {boolean} True si le domaine est dans la liste
  */
 export function isDomainInList(domain, list) {
-    // Vérification exacte
     if (list.includes(domain)) {
         return true;
     }
     
-    // Vérifier les sous-domaines (ex: sub.example.com correspond à example.com dans la liste)
     const parts = domain.split('.');
     for (let i = 1; i < parts.length; i++) {
         const parentDomain = parts.slice(i).join('.');
@@ -58,10 +48,9 @@ export function isDomainInList(domain, list) {
         }
     }
     
-    // Vérification avec wildcard (*.example.com dans la liste)
     for (const entry of list) {
         if (entry.startsWith('*.')) {
-            const pattern = entry.substring(2); // Enlever le *.
+            const pattern = entry.substring(2);
             if (domain.endsWith(pattern) || domain === pattern) {
                 return true;
             }
@@ -124,16 +113,12 @@ export async function getAllBlocklistFiles() {
 export async function analyzeSite(hostname) {
     const matches = [];
     
-    // Récupérer tous les fichiers de blocklist
     const files = await getAllBlocklistFiles();
     
-    // Charger et vérifier chaque liste
     for (const file of files) {
         const list = await loadBlocklist(file);
         if (list.length > 0 && isDomainInList(hostname, list)) {
-            // Extraire le nom sans l'extension .txt
             const listName = file.replace('.txt', '').replace(/-/g, ' ').replace(/_/g, ' ');
-            // Mettre la première lettre en majuscule
             const displayName = listName.charAt(0).toUpperCase() + listName.slice(1);
             matches.push(`✗ Matched "${displayName}"`);
         }

@@ -16,9 +16,6 @@
     "Segoe UI", sans-serif;
 }
 
-/* ========================================================
-   TRANSITION SYNCHRONISÉE & RAPIDE (0.35s)
-   ======================================================== */
 *,
 *::before,
 *::after {
@@ -42,14 +39,13 @@
 
 .wt-remove-report {
     flex: 1;
-    border-radius: 999px; /* même arrondi que les autres boutons */
+    border-radius: 999px;
     font-size: 12px;
     padding: 8px 10px;
     cursor: pointer;
     border: 1px solid transparent;
     font-weight: 500;
 
-    /* Style identique aux autres boutons */
     background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 64, 175, 0.6));
     color: #f9fafb;
     box-shadow: 0 10px 30px rgba(79, 70, 229, 0.4);
@@ -66,20 +62,17 @@
     box-shadow: 0 6px 18px rgba(79, 70, 229, 0.4);
 }
 
-/* Mode clair (facultatif si tu gères les thèmes) */
 body.light-theme .wt-remove-report {
     background: linear-gradient(135deg, #3b82f6, #6366f1);
     color: #ffffff;
     border-color: transparent;
 }
 
-/* --- EXCEPTION : LE CERCLE DOIT ÊTRE INSTANTANÉ --- */
 .wt-score-ring,
 .wt-score-ring::before {
   transition: none !important;
 }
 
-/* --- OPTIMISATION --- */
 .wt-btn-ghost,
 .wt-btn-primary {
   will-change: background, color, border-color;
@@ -99,7 +92,6 @@ body {
   font-family: var(--wt-font-main);
 }
 
-/* Container principal */
 .wt-container {
   padding: 14px 14px 10px;
   display: flex;
@@ -107,7 +99,6 @@ body {
   gap: 10px;
 }
 
-/* Header */
 .wt-header {
   display: flex;
   align-items: center;
@@ -145,7 +136,6 @@ body {
   color: var(--wt-text-muted);
 }
 
-/* Corps */
 .wt-main {
   margin-top: 4px;
   display: flex;
@@ -157,7 +147,6 @@ body {
   border: 1px solid var(--wt-border-subtle);
 }
 
-/* URL */
 .wt-url {
   font-size: 11px;
   display: flex;
@@ -175,7 +164,6 @@ body {
   word-break: break-all;
 }
 
-/* Carte score */
 .wt-score-card {
   margin-top: 4px;
   display: flex;
@@ -246,7 +234,6 @@ body {
   color: var(--wt-text-muted);
 }
 
-/* Tags */
 .wt-tags {
   margin-top: 4px;
   display: flex;
@@ -280,7 +267,6 @@ body {
   background: radial-gradient(circle at 0 0, rgba(239, 68, 68, 0.5), transparent 60%);
 }
 
-/* Footer / boutons */
 .wt-footer {
   margin-top: 2px;
   display: flex;
@@ -298,7 +284,6 @@ body {
   font-weight: 500;
 }
 
-/* MODIFICATION : Les DEUX boutons ont le même style (comme le Header) */
 .wt-btn-primary,
 .wt-btn-ghost {
   background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 64, 175, 0.6));
@@ -319,7 +304,6 @@ body {
   box-shadow: 0 6px 18px rgba(79, 70, 229, 0.4);
 }
 
-/* Loader */
 .wt-loader {
   width: 10px;
   height: 10px;
@@ -333,7 +317,6 @@ body {
   display: none;
 }
 
-/* Disclaimer */
 .wt-disclaimer {
   margin: 2px 2px 0;
   font-size: 9px;
@@ -341,14 +324,12 @@ body {
   text-align: center;
 }
 
-/* 1. Positionnement dans le header */
 .theme-switch-wrapper {
   margin-left: auto;
   display: flex;
   align-items: center;
 }
 
-/* 2. Structure du bouton */
 .theme-switch {
   position: relative;
   display: inline-block;
@@ -356,14 +337,12 @@ body {
   height: 24px;
 }
 
-/* On cache la checkbox par défaut */
 .theme-switch input {
   opacity: 0;
   width: 0;
   height: 0;
 }
 
-/* 3. Le corps du slider (la pilule) */
 .slider {
   position: absolute;
   cursor: pointer;
@@ -378,14 +357,12 @@ body {
   overflow: hidden;
 }
 
-/* 4. Les icônes 🌙 et ☀️ */
 .slider span {
   font-size: 12px;
   z-index: 1;
   user-select: none;
 }
 
-/* 5. Le bouton blanc qui glisse */
 .slider:before {
   position: absolute;
   content: "";
@@ -399,7 +376,6 @@ body {
   box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
-/* 6. Comportement au clic (Checked) */
 input:checked + .slider {
   background-color: rgba(255, 255, 255, 0.2);
 }
@@ -414,23 +390,16 @@ input:checked + .slider:before {
   }
 }
 
-/* ========================================================
-   MODE CLAIR (LIGHT THEME)
-   ======================================================== */
-
-/* Configuration de base */
 body.light-theme {
   background: radial-gradient(circle at top left, #f1f5f9 0, #cbd5e1 100%);
   color: #0f172a;
 }
 
-/* Carte principale blanche */
 body.light-theme .wt-main {
   background: linear-gradient(150deg, #ffffff, #f8fafc);
   border-color: rgba(0, 0, 0, 0.1);
 }
 
-/* Header (Texte blanc) */
 body.light-theme .wt-header {
   background: linear-gradient(135deg, #3b82f6, #6366f1);
 }
@@ -439,24 +408,21 @@ body.light-theme .wt-subtitle {
   color: #ffffff;
 }
 
-/* Les DEUX boutons en mode clair (Bleu vif comme le header) */
 body.light-theme .wt-btn-primary,
 body.light-theme .wt-btn-ghost {
   background: linear-gradient(135deg, #3b82f6, #6366f1);
-  color: #ffffff; /* Texte blanc sur fond bleu */
+  color: #ffffff;
   border-color: transparent;
 }
 
-/* --- FIX DU SCORE (Fond du rail gris clair au lieu de noir) --- */
 body.light-theme .wt-score-ring {
-  background-color: #e2e8f0; /* Remplace le noir du rail */
+  background-color: #e2e8f0;
 }
 body.light-theme .wt-score-ring::before {
-  background: #ffffff; /* Centre blanc */
+  background: #ffffff;
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
 }
 
-/* Textes */
 body.light-theme #wt-score-value { color: #0f172a; }
 body.light-theme .wt-url-value { color: #0f172a; }
 body.light-theme .wt-score-desc, 
@@ -465,35 +431,30 @@ body.light-theme .wt-url-label {
   color: #64748b;
 }
 
-/* --- TAGS : COULEURS VIVES SELON CRITICITÉ --- */
 body.light-theme .wt-tag {
   background: #f1f5f9;
   border-color: #e2e8f0;
   color: #475569;
 }
 
-/* Tag Vert (Sûr) */
 body.light-theme .wt-tag-safe {
   background: #dcfce7;
   border-color: #86efac;
   color: #166534;
 }
 
-/* Tag Jaune (Prudence) */
 body.light-theme .wt-tag-warning {
   background: #fef9c3;
   border-color: #fde047;
   color: #854d0e;
 }
 
-/* Tag Rouge (Risque) */
 body.light-theme .wt-tag-risk {
   background: #fee2e2;
   border-color: #fca5a5;
   color: #991b1b;
 }
 
-/* Loading barre */
 body.light-theme {
   background: #f8fafc;
   border-color: #e2e8f0;

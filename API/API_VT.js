@@ -1,21 +1,10 @@
-// API_VT.js (ESM)
+const VT_API_KEY = "3c96eb427a670f6aa49937d9d6652a349efdc8f793ae0d816ccc2b46cafbdf89";
 
-// ===============================
-// CONFIG
-// ===============================
-const VT_API_KEY = "3c96eb427a670f6aa49937d9d6652a349efdc8f793ae0d816ccc2b46cafbdf89"; // TEST ONLY (à ne pas hardcoder en prod)
-
-// ===============================
-// FONCTIONS INTERNES
-// ===============================
-
-// Base64url (RFC 4648) sans padding, compatible navigateur (pas de Buffer)
 function encodeUrl(url) {
   const bytes = new TextEncoder().encode(url);
   let binary = "";
   for (const b of bytes) binary += String.fromCharCode(b);
 
-  // btoa => base64, puis conversion base64url + suppression "="
   return btoa(binary).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
 }
 
@@ -44,9 +33,6 @@ async function getScores(id) {
   return { vtScore, reputation };
 }
 
-// ===============================
-// MAIN
-// ===============================
 export async function scanVirusTotal(url) {
   const id = encodeUrl(url);
   const { vtScore, reputation } = await getScores(id);
