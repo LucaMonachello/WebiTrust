@@ -75,11 +75,6 @@ function displayMessages(messages){
         const div = document.createElement("div");
         div.className = `wt-message wt-${msg.severity}`;
 
-        // Ne pas afficher le texte pour éviter le doublon
-        // const text = document.createElement("span");
-        // text.textContent = msg.text;
-        // div.appendChild(text);
-
         const btn = document.createElement("button");
         btn.textContent = "Retirer";
         btn.className = "wt-remove-report";

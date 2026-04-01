@@ -1,8 +1,3 @@
-/**
- * Popup principal - Logique d'orchestration
- * Coordonne les modules pour analyser et afficher les résultats
- */
-
 import { analyzeSite } from './blocklist.js';
 import { analyzeSecurityFeatures, checkAccessibility } from './securityAnalyzer.js';
 import { calculateScore } from './scoreCalculator.js';
@@ -14,44 +9,22 @@ import {
     showErrorState 
 } from './uiManager.js';
 
-// Variables globales pour stocker les informations du site
 let currentHostname = null;
 let currentURL = null;
 
-/* =========================================================
-
-
-   AJOUT : couche API cross-browser + storage signalements
-
-
-   ========================================================= */
-
-/**
- * AJOUT : Firefox expose `browser` (Promise-based), Chrome expose `chrome`.
- * On choisit automatiquement l'API dispo.
- */
 const hasBrowser = typeof globalThis.browser !== "undefined";
 
 
 const api = hasBrowser ? globalThis.browser : globalThis.chrome;
-/**
- * AJOUT : normalisation du hostname pour éviter les mismatches
- * (majuscules, point final, espaces, etc.).
- */
 function normalizeHostname(hostname) {
   return String(hostname || "")
     .trim()
     .toLowerCase()
-    .replace(/\.+$/, ""); // enlève les "." finaux éventuels
+    .replace(/\.+$/, "");
 }
 
-/**
- * AJOUT : clé unique dans storage.local pour stocker les signalements.
- */
 const REPORTS_KEY = "reports";
-/**
- * AJOUT : storageGet compatible Firefox (Promise) + Chrome (callback).
- */
+
 async function storageGet(key) {
   if (!api?.storage?.local) return {};
   if (hasBrowser) {
@@ -69,9 +42,6 @@ async function storageGet(key) {
 
 }
 
-/**
- * AJOUT : storageSet compatible Firefox (Promise) + Chrome (callback).
- */
 async function storageSet(obj) {
   if (!api?.storage?.local) return;
   if (hasBrowser) {
@@ -88,29 +58,17 @@ async function storageSet(obj) {
   });
 }
 
-
-/**
- * AJOUT : récupérer la map complète des signalements.
- * Format: { "example.com": { url, hostname, timestamp }, ... }
- */
 async function getReportsMap() {
   const data = await storageGet(REPORTS_KEY);
   return data?.[REPORTS_KEY] || {};
 }
 
-/**
- * AJOUT : récupérer un signalement (ou null).
- */
 async function getReport(hostname) {
   const key = normalizeHostname(hostname);
   const reports = await getReportsMap();
   return reports[key] || null;
 }
 
-
-/**
- * AJOUT : enregistrer / mettre à jour un signalement.
- */
 async function saveReport(reportInfo) {
   const reports = await getReportsMap();
   const key = normalizeHostname(reportInfo.hostname);
@@ -118,18 +76,13 @@ async function saveReport(reportInfo) {
   await storageSet({ [REPORTS_KEY]: reports });
 }
 
-/**
- * AJOUT (optionnel) : supprimer un signalement.
- */
 async function removeReport(hostname) {
   const reports = await getReportsMap();
   const key = normalizeHostname(hostname);
   delete reports[key];
   await storageSet({ [REPORTS_KEY]: reports });
 }
-/**
- * AJOUT : récupérer l'onglet actif (Firefox Promise / Chrome callback).
- */
+
 async function getActiveTab() {
   if (!api?.tabs?.query) return null;
   if (hasBrowser) {
@@ -157,7 +110,6 @@ async function performAnalysis(url, hostname, options = {}) {
         showErrorState('Analyse trop longue, veuillez réessayer');
     }, 30000);
 
-    // ✅ Vérification signalement (depuis main)
     const reportedMessages = [];
     try {
         const existingReport = await getReport(hostname);
@@ -177,26 +129,22 @@ async function performAnalysis(url, hostname, options = {}) {
     }
 
     try {
-        // 0️⃣ Accessibilité (non-bloquant — l'utilisateur est déjà sur le site)
         const accessibilityCheck = await checkAccessibility(url);
         const accessibilityMessages = !accessibilityCheck.isAccessible
             ? [{ text: accessibilityCheck.message, severity: accessibilityCheck.severity }]
             : [];
 
-        // 1️⃣ Blocklists + Sécurité (en parallèle)
         const [blocklistMatches, securityResults] = await Promise.all([
             analyzeSite(hostname),
             analyzeSecurityFeatures(url, hostname)
         ]);
 
-        // 2️⃣ API (seulement si bouton "Vérifier")
         if (useApi) {
             const apiResult = await calculateScoreApi(url);
             securityResults.totalPenalty += apiResult.penalty;
             securityResults.messages = [...securityResults.messages, ...(apiResult.messages || [])];
         }
 
-        // 3️⃣ Score final + affichage
         const finalScore = calculateScore(blocklistMatches, securityResults.totalPenalty);
         displayScore(finalScore, blocklistMatches, [
             ...reportedMessages,
@@ -217,11 +165,8 @@ async function performAnalysis(url, hostname, options = {}) {
         clearTimeout(analysisTimeout);
     }
 }
-/**
- * Récupère et analyse l'URL de l'onglet actif
- */
+
 function getCurrentURL() {
-    // Pour Manifest V2, utiliser chrome.tabs.query
     if (typeof chrome !== 'undefined' && chrome.tabs) {
         chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
             if (tabs.length > 0) {
@@ -232,7 +177,6 @@ function getCurrentURL() {
                     
                     displayURL(currentHostname);
                     
-                    // Lancer l'analyse automatiquement
                     performAnalysis(currentURL, currentHostname);
                 } catch (error) {
                     console.error('Erreur lors de la récupération de l\'URL:', error);
@@ -241,7 +185,6 @@ function getCurrentURL() {
             }
         });
     } else {
-        // Fallback pour les tests locaux
         currentURL = 'https://example.com';
         currentHostname = 'example.com';
         displayURL(currentHostname);
@@ -249,9 +192,6 @@ function getCurrentURL() {
     }
 }
 
-/**
- * Gestionnaire du bouton "Vérifier ce site"
- */
 function handleCheckButton() {
     if (currentHostname && currentURL) {
         performAnalysis(currentURL, currentHostname, { useApi: true });
@@ -260,9 +200,6 @@ function handleCheckButton() {
     }
 }
 
-/**
- * Gestionnaire du bouton "Signaler"
- */
 async function handleReportButton() {
   if (!currentHostname || !currentURL) {
     alert('Aucun site à signaler');
@@ -271,19 +208,16 @@ async function handleReportButton() {
 
   const reportInfo = {
     url: currentURL,
-    hostname: currentHostname, // déjà normalisé
+    hostname: currentHostname,
     timestamp: new Date().toISOString()
   };
 
   try {
     await saveReport(reportInfo);
 
-    // AJOUT : debug => relire juste après pour confirmer que Firefox a bien écrit
     const verify = await getReport(currentHostname);
     console.log("[REPORT] verify after save =", verify);
 
-
-    // Relance l'analyse pour afficher l’alerte immédiatement
     await performAnalysis(currentURL, currentHostname);
 
   } catch (e) {
@@ -292,14 +226,9 @@ async function handleReportButton() {
   }
 }
 
-/**
- * Initialise l'application
- */
 function init() {
-    // Récupérer et analyser l'URL actuelle
     getCurrentURL();
     
-    // Configurer les gestionnaires d'événements
     const checkBtn = document.getElementById('wt-btn-check');
     const reportBtn = document.getElementById('wt-btn-report');
     
@@ -316,7 +245,6 @@ function init() {
     function switchTheme(e) {
         if (e.target.checked) {
             document.body.classList.add('light-theme');
-            // Optionnel : enregistre le choix pour la prochaine ouverture
             localStorage.setItem('theme', 'light');
         } else {
             document.body.classList.remove('light-theme');
@@ -324,11 +252,9 @@ function init() {
         }
     }
 
-    // Écouteur de clic sur le bouton
     if (toggleSwitch) {
         toggleSwitch.addEventListener('change', switchTheme, false);
 
-        // Vérifie si l'utilisateur avait déjà choisi le mode clair auparavant
         const currentTheme = localStorage.getItem('theme');
         if (currentTheme === 'light') {
             toggleSwitch.checked = true;
@@ -345,6 +271,4 @@ window.addEventListener("removeReportRequest", async () => {
 
 })
 
-
-// Initialiser au chargement du DOM
 document.addEventListener('DOMContentLoaded', init);

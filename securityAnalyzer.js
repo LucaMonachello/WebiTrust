@@ -1,9 +1,4 @@
 /**
- * Module d'analyse de sécurité
- * Vérifie les caractéristiques de sécurité d'un site web
- */
-
-/**
  * Vérifie si le site utilise HTTPS
  * @param {string} url - URL complète du site
  * @returns {Object} Résultat de la vérification
@@ -12,14 +7,14 @@
 export async function checkAccessibility(url) {
     const urlObj = new URL(url);
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 4000); // ⏱ timeout global
+    const timeout = setTimeout(() => controller.abort(), 4000);
 
     try {
         const response = await fetch(url, {
             method: 'HEAD',
             mode: 'no-cors',
             cache: 'no-store',
-            signal: controller.signal // ✅ annulable
+            signal: controller.signal
         });
         clearTimeout(timeout);
         return { isAccessible: true, status: 'ok', penaltyScore: 0, message: '✓ Site accessible', severity: 'safe' };
@@ -64,10 +59,6 @@ export function checkHTTPS(url) {
  * @returns {Promise<Object>} Résultat de l'analyse
  */
 export async function checkDomainAge(hostname) {
-    // Simulation - En production, appeler une API WHOIS
-    // Pour l'instant, on peut détecter certains patterns suspects
-    
-    // Vérifier les préfixes suspects (ww2, ww3, etc.)
     const suspiciousPrefixes = /^ww\d+\./i;
     if (suspiciousPrefixes.test(hostname)) {
         return {
@@ -79,10 +70,10 @@ export async function checkDomainAge(hostname) {
     }
     
     const suspiciousPatterns = [
-        /\d{4,}/, // Beaucoup de chiffres
-        /-\d+$/, // Se termine par -chiffres
-        /[a-z]{20,}/, // Nom très long sans tirets
-        /(.)\1{3,}/, // Caractères répétés (ex: aaaa)
+        /\d{4,}/,
+        /-\d+$/,
+        /[a-z]{20,}/,
+        /(.)\1{3,}/,
     ];
     
     let isSuspicious = false;
@@ -96,7 +87,6 @@ export async function checkDomainAge(hostname) {
         }
     }
     
-    // Vérifier les TLDs suspects
     const suspiciousTLDs = ['.tk', '.ml', '.ga', '.cf', '.gq', '.xyz', '.top', '.work', '.click','.cr','.st','.su','.ru','.cc','.co'];
     const hasSuspiciousTLD = suspiciousTLDs.some(tld => hostname.endsWith(tld));
     
@@ -143,9 +133,9 @@ export async function checkSSLCertificate(url) {
                 if (settled) return;
                 settled = true;
                 clearTimeout(timer);
-                img.onload = null;   // ✅ Nettoyage
-                img.onerror = null;  // ✅ Nettoyage
-                img.src = '';        // ✅ Annule la requête
+                img.onload = null;
+                img.onerror = null;
+                img.src = '';
                 resolve(result);
             };
 
@@ -173,7 +163,6 @@ export async function checkMixedContent(url) {
     try {
         const urlObj = new URL(url);
         
-        // Seulement pertinent pour les sites HTTPS
         if (urlObj.protocol !== 'https:') {
             return {
                 hasMixedContent: false,
@@ -182,9 +171,6 @@ export async function checkMixedContent(url) {
                 severity: 'safe'
             };
         }
-        
-        // Note: En extension, on pourrait analyser le contenu de la page
-        // Pour l'instant, c'est une vérification basique
         
         return {
             hasMixedContent: false,
@@ -215,7 +201,6 @@ export async function analyzeSecurityFeatures(url, hostname) {
         messages: []
     };
     
-    // Vérification HTTPS
     const httpsCheck = checkHTTPS(url);
     results.checks.push(httpsCheck);
     results.totalPenalty += httpsCheck.penaltyScore;
@@ -226,8 +211,6 @@ export async function analyzeSecurityFeatures(url, hostname) {
         });
     }
     
-    
-    // Vérification de l'âge du domaine
     const domainAgeCheck = await checkDomainAge(hostname);
     results.checks.push(domainAgeCheck);
     results.totalPenalty += domainAgeCheck.penaltyScore;
@@ -238,7 +221,6 @@ export async function analyzeSecurityFeatures(url, hostname) {
         });
     }
     
-    // Vérification du contenu mixte
     const mixedContentCheck = await checkMixedContent(url);
     results.checks.push(mixedContentCheck);
     results.totalPenalty += mixedContentCheck.penaltyScore;

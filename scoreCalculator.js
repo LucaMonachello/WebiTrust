@@ -1,9 +1,4 @@
 /**
- * Module de calcul du score de fiabilité - Version 100 points
- * Gère la logique mathématique et la catégorisation du niveau de risque
- */
-
-/**
  * Calcule le score final sur 100
  * @param {string[]} matches - Liste des correspondances dans les blocklists
  * @param {number} securityPenalty - Pénalité accumulée (basée sur securityAnalyzer)
@@ -12,23 +7,17 @@
 export function calculateScore(matches, securityPenalty = 0) {
     let score = 100;
 
-    // 1. Pénalités pour les listes noires (Blocklists)
-    // On considère qu'une détection est critique
     if (matches.length === 1) {
-        score -= 25; // Chute directe à 50 (Orange)
+        score -= 25;
     } else if (matches.length === 2) {
-        score -= 50; // Chute à 20 (Rouge)
+        score -= 50;
     } else if (matches.length >= 3) {
-        score -= 80; // Danger immédiat (0)
+        score -= 80;
     }
 
-    // 2. Pénalités techniques (HTTPS, SSL, etc.)
-    // Les pénalités venant de securityAnalyzer (ex: -2) sont multipliées par 15
-    // pour avoir un impact réel sur une échelle de 100.
     const technicalImpact = Math.abs(securityPenalty);
     score -= technicalImpact;
 
-    // 3. Sécurité : On s'assure que le score reste entre 0 et 100
     return Math.max(0, Math.min(100, Math.round(score)));
 }
 
@@ -52,7 +41,6 @@ export function getScoreInfo(score, matches, securityMessages = []) {
         tags = [...tags, ...matches];
     }
 
-    // ✅ Fallback selon le niveau de risque si aucun tag n'est généré
     if (tags.length === 0) {
         if (score >= 90) {
             tags = ["✓ Site sécurisé", "✓ Connexion chiffrée", "✓ Aucun risque détecté"];
@@ -78,7 +66,7 @@ export function getScoreInfo(score, matches, securityMessages = []) {
  * @returns {string} Code couleur Hex
  */
 export function getScoreColor(score) {
-    if (score >= 80) return '#22c55e'; // Vert (--wt-safe)
-    if (score >= 50) return '#f59e0b'; // Orange (--wt-warning)
-    return '#ef4444'; // Rouge (--wt-danger)
+    if (score >= 80) return '#22c55e';
+    if (score >= 50) return '#f59e0b';
+    return '#ef4444';
 }
