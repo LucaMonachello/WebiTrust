@@ -2,7 +2,6 @@ const CF_API_TOKEN = "stTBE7TzitSNZ9QAciyNOhzVq5sXQFGp_7HLb0da";
 const ACCOUNT_ID   = "17ecf198b86d88bf24c61bb4ca53f27c";
 const BASE_URL     = `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/urlscanner/v2`;
 
-// ✅ Cherche un scan récent (dernières 24h) avant d'en créer un nouveau
 async function findExistingScan(url) {
     const encoded = encodeURIComponent(url);
     const res = await fetch(`${BASE_URL}/search?q=url%3A"${encoded}"&limit=1`, {
@@ -13,7 +12,6 @@ async function findExistingScan(url) {
     const result = data.result?.tasks?.[0];
     if (!result) return null;
 
-    // Vérifier que le scan a moins de 24h
     const scanTime = new Date(result.time).getTime();
     const age = Date.now() - scanTime;
     if (age > 24 * 60 * 60 * 1000) return null;
@@ -38,7 +36,7 @@ async function createScan(url) {
 }
 
 async function getScanResult(scanId) {
-    const MAX_ATTEMPTS = 10; // ✅ Max 10 tentatives = 30s max
+    const MAX_ATTEMPTS = 10;
     let attempts = 0;
 
     while (attempts < MAX_ATTEMPTS) {
@@ -87,7 +85,6 @@ function mapVerdicts(data) {
 }
 
 export async function scanCloudflareRadar(url) {
-    // ✅ Réutilise un scan récent si disponible, sinon en crée un nouveau
     let scanId = await findExistingScan(url);
     if (!scanId) {
         scanId = await createScan(url);
