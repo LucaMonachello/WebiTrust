@@ -1,4 +1,4 @@
-const CF_API_TOKEN = "cfat_DLjf0ZkBgvIlU61v6UT3GYkonwnPSTHrWqG00nJ3ca32f8de";
+const CF_API_TOKEN = "cfat_YfeBJVppTa1i4R0cKrhYNLavTSBLeJmvchVOZBwb89430f09";
 const ACCOUNT_ID   = "17ecf198b86d88bf24c61bb4ca53f27c";
 const BASE_URL     = `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/urlscanner/v2`;
 
@@ -37,7 +37,7 @@ async function createScan(url) {
 }
 
 async function getScanResult(scanId) {
-    const MAX_ATTEMPTS = 15;
+    const MAX_ATTEMPTS = 20;
     let attempts = 0;
 
     while (attempts < MAX_ATTEMPTS) {
