@@ -65,6 +65,4 @@ export async function calculateScoreApi(url) {
             }]
         };
     }
-    console.log("Penalty after CF:", penalty);
-
 }

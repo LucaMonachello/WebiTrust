@@ -1,22 +1,23 @@
-const CF_API_TOKEN = "stTBE7TzitSNZ9QAciyNOhzVq5sXQFGp_7HLb0da";
+const CF_API_TOKEN = "cfat_DLjf0ZkBgvIlU61v6UT3GYkonwnPSTHrWqG00nJ3ca32f8de";
 const ACCOUNT_ID   = "17ecf198b86d88bf24c61bb4ca53f27c";
 const BASE_URL     = `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/urlscanner/v2`;
 
 async function findExistingScan(url) {
-    const encoded = encodeURIComponent(url);
-    const res = await fetch(`${BASE_URL}/search?q=url%3A"${encoded}"&limit=1`, {
+    const q = `task.url:"${url}"`;
+    const res = await fetch(`${BASE_URL}/search?q=${encodeURIComponent(q)}&limit=1`, {
         headers: { Authorization: `Bearer ${CF_API_TOKEN}` }
     });
     if (!res.ok) return null;
     const data = await res.json();
-    const result = data.result?.tasks?.[0];
+
+    const result = data.results?.[0]; // ✅ bonne structure
     if (!result) return null;
 
-    const scanTime = new Date(result.time).getTime();
+    const scanTime = new Date(result.task.time).getTime(); // ✅ result.task.time
     const age = Date.now() - scanTime;
     if (age > 24 * 60 * 60 * 1000) return null;
 
-    return result.uuid;
+    return result.task.uuid; // ✅ result.task.uuid
 }
 
 async function createScan(url) {
@@ -36,7 +37,7 @@ async function createScan(url) {
 }
 
 async function getScanResult(scanId) {
-    const MAX_ATTEMPTS = 10;
+    const MAX_ATTEMPTS = 15;
     let attempts = 0;
 
     while (attempts < MAX_ATTEMPTS) {
@@ -44,18 +45,12 @@ async function getScanResult(scanId) {
             headers: { Authorization: `Bearer ${CF_API_TOKEN}` }
         });
 
-        if (res.status === 404 || !res.ok) {
-            await new Promise(r => setTimeout(r, 3000));
-            attempts++;
-            continue;
+        if (res.status === 200) {
+            return await res.json(); // ✅ 200 = terminé, pas besoin de vérifier status
         }
 
-        const data = await res.json();
-        const status = data.task?.status?.toLowerCase();
-
-        if (status === "finished") return data;
-
-        await new Promise(r => setTimeout(r, 3000));
+        // 404 = scan en cours, on attend
+        await new Promise(r => setTimeout(r, 10000)); // ✅ 10s entre chaque tentative
         attempts++;
     }
 
@@ -76,10 +71,10 @@ function mapVerdicts(data) {
 
     return {
         malicious,
-        phishing:          malicious && allLabels.some(l => l.includes("phish")),
-        malware:           malicious && allLabels.some(l => l.includes("malware") || l.includes("virus") || l.includes("trojan")),
-        spam:              malicious && allLabels.some(l => l.includes("spam") || l.includes("bulk")),
-        crypto_mining:     malicious && allLabels.some(l => l.includes("crypto") || l.includes("mining")),
+        phishing:            malicious && allLabels.some(l => l.includes("phish")),
+        malware:             malicious && allLabels.some(l => l.includes("malware") || l.includes("virus") || l.includes("trojan")),
+        spam:                malicious && allLabels.some(l => l.includes("spam") || l.includes("bulk")),
+        crypto_mining:       malicious && allLabels.some(l => l.includes("crypto") || l.includes("mining")),
         command_and_control: malicious && allLabels.some(l => l.includes("c2") || l.includes("command and control") || l.includes("botnet")),
     };
 }
